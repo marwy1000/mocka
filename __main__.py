@@ -1,6 +1,7 @@
-# jsonfaker - Generate fake JSON data from a schema
+# mockr - Generate fake JSON data from a schema
 # Copyright (c) - Salih Serdenak
 # License: MIT
+__version__ = "0.0.1"
 
 
 from src.cli import parse_args
