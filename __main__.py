@@ -23,6 +23,8 @@ def main():
         with open(args.config, "r", encoding="utf-8") as f:
             config = json.load(f)
 
+    field_overrides = config.get("field_overrides", {})
+    
     faker = configure_faker(config, args.seed)
 
     schema = load_schema(args.schema)
@@ -33,6 +35,7 @@ def main():
         schema,
         faker,
         keyword_faker_map,
+        field_overrides,
         include_optional=args.include_optional,
         infer_from_description=args.infer_from_descriptions,
         blank_mode=args.blank,
