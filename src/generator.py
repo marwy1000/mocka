@@ -17,9 +17,13 @@ def resolve_ref(root_schema, ref_path):
     return sub_schema
 
 
-def generate_value(prop, keyword_faker_map, key_hint=None, faker=None, include_optional=True,
+def generate_value(prop, keyword_faker_map, field_overrides, key_hint=None, faker=None, include_optional=True,
                    infer_from_description=False, root_schema=None, blank_mode=False):
     """Generate a value for a given JSON Schema property."""
+
+    # Apply field override if available
+    if field_overrides and key_hint in field_overrides:
+        return field_overrides[key_hint] if blank_mode else field_overrides[key_hint]
 
     if "$ref" in prop:
         if root_schema is None:
@@ -27,12 +31,12 @@ def generate_value(prop, keyword_faker_map, key_hint=None, faker=None, include_o
         ref_schema = resolve_ref(root_schema, prop["$ref"])
         if ref_schema.get("type") == "object":
             return generate_from_schema(
-                ref_schema, faker, keyword_faker_map, include_optional, infer_from_description,
+                ref_schema, faker, keyword_faker_map, field_overrides, include_optional, infer_from_description,
                 blank_mode=blank_mode, root_schema=root_schema
             )
         else:
             return generate_value(
-                ref_schema, keyword_faker_map, key_hint, faker,
+                ref_schema, keyword_faker_map, field_overrides, key_hint, faker,
                 include_optional, infer_from_description,
                 root_schema, blank_mode
             )
@@ -75,20 +79,20 @@ def generate_value(prop, keyword_faker_map, key_hint=None, faker=None, include_o
         if isinstance(items, list):
             for item_schema in items:
                 results.append(generate_value(
-                    item_schema, keyword_faker_map, key_hint, faker, include_optional,
+                    item_schema, keyword_faker_map, field_overrides, key_hint, faker, include_optional,
                     infer_from_description, root_schema=root_schema, blank_mode=blank_mode
                 ))
         else:
             for _ in range(random.randint(1, 3)):
                 results.append(generate_value(
-                    items, keyword_faker_map, key_hint, faker, include_optional,
+                    items, keyword_faker_map, field_overrides, key_hint, faker, include_optional,
                     infer_from_description, root_schema=root_schema, blank_mode=blank_mode
                 ))
         return results
 
     elif t == "object":
         return generate_from_schema(
-            prop, faker, keyword_faker_map, include_optional, infer_from_description, root_schema=root_schema
+            prop, faker, keyword_faker_map, field_overrides, include_optional, infer_from_description, root_schema=root_schema
         )
 
     return None
@@ -117,7 +121,7 @@ def generate_faker_value_from_key(description, key_hint, blank_mode, faker, keyw
 
 
 
-def generate_from_schema(schema, faker, keyword_faker_map, include_optional=True,
+def generate_from_schema(schema, faker, keyword_faker_map, field_overrides, include_optional=True,
                          infer_from_description=False, blank_mode=False, root_schema=None):
 
     """Generate a full JSON object from the provided schema."""
@@ -129,7 +133,7 @@ def generate_from_schema(schema, faker, keyword_faker_map, include_optional=True
             if not include_optional:
                 continue
         result[key] = generate_value(
-            prop, keyword_faker_map, key_hint=key, faker=faker,
+            prop, keyword_faker_map, field_overrides, key_hint=key, faker=faker,
             include_optional=include_optional,
             infer_from_description=infer_from_description,
             root_schema=root_schema or schema,
