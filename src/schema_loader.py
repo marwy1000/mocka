@@ -1,6 +1,6 @@
 import json
-import pyperclip
 import sys
+import pyperclip
 
 
 def load_schema(source=None):

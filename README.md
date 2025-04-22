@@ -46,7 +46,7 @@ mockr.exe -h
 ```
 
 ## Config File Example
-You can configure the behavior of the app by providing a JSON configuration file. Below is an example of a config.txt file:
+You can configure the behavior of the app by providing a JSON configuration file. Below is an example of a config file:
 
 ```json
 {
@@ -57,7 +57,28 @@ You can configure the behavior of the app by providing a JSON configuration file
     "field_overrides": {
         "email": "foo@example.com",
         "Name": "Test Name"
-    }
+    },
+    "keyword_matching":
+        [
+            { "keywords": ["email", "e-mail", "mail"], "method": "email" },
+            { "keywords": ["date", "datum"], "method": "date" },
+            { "keywords": ["dob", "birthday", "birth"], "method": "date_of_birth", "args": { "minimum_age": 18, "maximum_age": 90 } },
+            { "keywords": ["description", "descr", "summary", "text", "comment", "content"], "method": "sentence", "args": { "nb_words": 12 } },
+            { "keywords": ["number", "nummer", "amount", "antal"], "method": "random_int", "wrap": "str", "args": { "min": 0, "max": 10000 } },
+            { "keywords": ["status", "type", "label"], "method": "word" },
+            { "keywords": ["address", "location", "street", "adress"], "method": "address" },
+            { "keywords": ["company", "firm", "organization", "OrganizationName"], "method": "company" },
+            { "keywords": ["ssn", "social security", "personnummer"], "method": "ssn" },
+            { "keywords": ["phone", "tel", "mobile"], "method": "phone_number" },
+            { "keywords": ["zip", "postcode", "postal", "postnummer"], "method": "postcode" },
+            { "keywords": ["city", "town", "stad"], "method": "city" },
+            { "keywords": ["country", "nation"], "method": "country" },
+            { "keywords": ["state", "province", "region"], "method": "state" },
+            { "keywords": ["url", "uri", "website", "web"], "method": "uri" },
+            { "keywords": ["username", "user name", "login"], "method": "user_name" },
+            { "keywords": ["ip", "ipv4", "ipv6"], "method": "ipv4" },
+            { "keywords": ["name", "title", "namn"], "method": "name" }
+        ]
 }
 ```
 

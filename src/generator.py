@@ -178,10 +178,16 @@ def generate_faker_value_from_key(
             args = entry.get("args", {})
             wrap = entry.get("wrap", None)
 
-            if hasattr(faker, method_name):
-                value = getattr(faker, method_name)(**args)
-            else:
-                value = faker.word()
+            try:
+                if method_name == "custom_vat":
+                    value = custom_vat(faker, **args)
+                elif hasattr(faker, method_name):
+                    value = getattr(faker, method_name)(**args)
+                else:
+                    value = faker.word()
+            except Exception as e:
+                print(f"Error generating value for '{method_name}': {e}")
+                value = ""
 
             return str(value) if wrap == "str" else value
 
@@ -218,3 +224,13 @@ def generate_from_schema(
             blank_mode=blank_mode,
         )
     return result
+
+
+def custom_vat(faker, country_code="SE"):
+    formats = {
+        "SE": "SE##########",
+        "DE": "DE#########",
+        "FR": "FR## #########",  # Example: not always valid
+    }
+    pattern = formats.get(country_code, country_code + "##########")
+    return faker.bothify(pattern)
