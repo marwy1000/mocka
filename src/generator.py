@@ -90,7 +90,6 @@ def generate_value(prop, keyword_faker_map, field_overrides, key_hint=None, fake
                 ))
         else:
             array_length = random.randint(1, MAX_ARRAY_LENGTH)
-            input(array_length)
             for _ in range(array_length):
                 results.append(generate_value(
                     items, keyword_faker_map, field_overrides, key_hint, faker, include_optional,
