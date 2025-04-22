@@ -1,8 +1,9 @@
-import random
-from faker import Faker
 import importlib
 import json
 import os
+import random
+from faker import Faker
+
 
 def configure_faker(config: dict = None, args_seed=None):
     """Configure and return a Faker instance based on the given config."""
@@ -42,67 +43,64 @@ def configure_faker(config: dict = None, args_seed=None):
 
     return faker
 
+
 DEFAULT_KEYWORD_FAKER_MAP = [
     {
         "keywords": ["email", "e-mail", "mail"],
         "method": "email",
         "args": {},
-        "wrap": "str"
+        "wrap": "str",
     },
     {
         "keywords": ["date", "datum"],
         "method": "date_of_birth",  # Example: could be `date_of_birth` or something else depending on your needs
         "args": {},
-        "wrap": "str"
+        "wrap": "str",
     },
-    {
-        "keywords": ["name", "title", "namn"],
-        "method": "name",
-        "args": {},
-        "wrap": "str"
-    },
+    {"keywords": ["name", "namn"], "method": "name", "args": {}, "wrap": "str"},
     {
         "keywords": ["number", "nummer", "amount"],
         "method": "random_int",
         "args": {"min": 0, "max": 10000},
-        "wrap": "str"  # Wrap to string for consistency
+        "wrap": "str",  # Wrap to string for consistency
     },
     {
-        "keywords": ["address", "location", "street"],
+        "keywords": ["address", "location", "street", "adress"],
         "method": "address",
         "args": {},
-        "wrap": "str"
+        "wrap": "str",
     },
     {
         "keywords": ["company", "firm", "organization"],
         "method": "company",
         "args": {},
-        "wrap": "str"
+        "wrap": "str",
     },
     {
         "keywords": ["ssn", "social security"],
         "method": "ssn",
         "args": {},
-        "wrap": "str"
+        "wrap": "str",
     },
     {
         "keywords": ["birthdate", "dob", "date of birth"],
         "method": "date_of_birth",  # Example: could be any other relevant Faker method
         "args": {},
-        "wrap": "str"
-    }
+        "wrap": "str",
+    },
 ]
+
 
 def load_keyword_faker_map():
     """
     Load the custom keyword-to-faker method mappings from a JSON file.
     If the file is not provided or cannot be found, it will return a default map.
     """
-    file_name = '.\\mockr.config'
+    file_name = ".\\mockr.config"
     current_dir = os.path.dirname(os.path.abspath(__file__))
     file_path = os.path.join(current_dir, file_name)
     if file_path and os.path.exists(file_path):
-        with open(file_path, 'r') as f:
+        with open(file_path, "r", encoding="utf8") as f:
             return json.load(f)
     else:
         # Return the default map if no file or if file doesn't exist
