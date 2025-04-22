@@ -30,24 +30,14 @@ source venv/bin/activate  # On Windows: venv\\Scripts\\activate
 ```bash
 pip install -r requirements.txt
 ```
-## Run 
+## Usage 
+### Call the script without building and executable file
 To get started and get help, in cloned directory:
 ```bash
 python .\__main__.py -h
 ```
 
-## Config
-You can create a file where the keys can be used to match against your data values. The file is provided as the option --data and should be a file that contain a json like: 
-```json
-{
-  "firstName": ["Alice", "Bob", "Charlie"],
-  "age": [25, 30, 35],
-  "email": ["test@example.com", "hello@world.com"],
-  "Descr": ["My description", "Another one of my descriptions"]
-}
-```
-
-## Build an exe
+### Build an exe
 From the cloned directory:
 ```bash
 pyinstaller --onefile --name mockr ./__main__.py
@@ -55,6 +45,41 @@ cd dist
 mockr.exe -h
 ```
 
+## Config File Example
+You can configure the behavior of the app by providing a JSON configuration file. Below is an example of a config.txt file:
+
+```json
+{
+    "locale": ["sv_SE", "it_IT", "en_US", "ja_JP"],
+    "seed": 2,
+    "providers": ["internet", "address", "company"],
+    "custom_words": ["foo", "bar", "baz"],
+    "max_array_length": 3,
+    "field_overrides": {
+        "email": "foo@example.com",
+        "Name": "Test Name"
+    }
+}
+```
+
+### Configuration Options:
+locale: A list of locales to be used for generating data. If multiple locales are provided, one will be chosen randomly each time the tool runs. You can specify any valid locale supported by the Faker library (e.g., en_US, sv_SE, it_IT, ja_JP).
+
+seed: A fixed random seed for reproducible results. This ensures that the generated data will be the same each time you run the tool with the same seed value.
+
+providers: A list of [Faker](https://pypi.org/project/Faker) providers to include for generating data. In this example, the internet, address, and company providers are included. You can add or remove providers depending on your needs. For more providers, refer to the Faker documentation.
+
+custom_words: A list of custom words that can be used in place of default Faker-generated words. You can extend or modify this list to suit your needs.
+
+max_array_length: The maximum length for arrays that are generated. This controls how many items are included in arrays (e.g., lists of objects).
+
+field_overrides: A dictionary of field names with custom values. This allows you to specify custom values for specific fields in the generated data. For example, the email field will always be set to "foo@example.com" and the Name field will always be "Test Name".
+
+### Usage
+```bash
+mockr myschema.json --config config.txt
+```
+
 ## TODO
-Add a config file, which can be used to configure keys and descriptions to decide how they are generated.
 Improved debug
+Improve built performance
