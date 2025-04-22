@@ -1,5 +1,4 @@
 import json
-from pathlib import Path
 import pyperclip
 import sys
 
@@ -22,6 +21,7 @@ def load_schema(source=None):
 
         return parsed
 
+
 def get_clipboard_fallback():
     try:
         pyperclip.set_clipboard("windows")  # Force Windows clipboard backend
@@ -29,10 +29,10 @@ def get_clipboard_fallback():
     except Exception:
         try:
             import tkinter as tk
+
             r = tk.Tk()
             r.withdraw()
             return r.clipboard_get()
         except Exception as e:
             print("Failed to access clipboard:", e)
             sys.exit(1)
-
