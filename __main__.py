@@ -15,15 +15,17 @@ from pathlib import Path
 import random
 from faker import Faker
 
+
 def main():
+    DEFAULT_MAX_ARRAY_LENGTH = 10   
     args = parse_args()
-    
     config = {}
     if args.config:
         with open(args.config, "r", encoding="utf-8") as f:
             config = json.load(f)
 
     field_overrides = config.get("field_overrides", {})
+    max_array_length = config.get("max_array_length", DEFAULT_MAX_ARRAY_LENGTH)
     
     faker = configure_faker(config, args.seed)
 
@@ -36,6 +38,7 @@ def main():
         faker,
         keyword_faker_map,
         field_overrides,
+        max_array_length,
         include_optional=args.include_optional,
         infer_from_description=args.infer_from_descriptions,
         blank_mode=args.blank,

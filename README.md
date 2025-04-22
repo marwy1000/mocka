@@ -71,7 +71,7 @@ providers: A list of [Faker](https://pypi.org/project/Faker) providers to includ
 
 custom_words: A list of custom words that can be used in place of default Faker-generated words. You can extend or modify this list to suit your needs.
 
-max_array_length: The maximum length for arrays that are generated. This controls how many items are included in arrays (e.g., lists of objects).
+max_array_length: The maximum length for arrays that are generated. This controls how many items are included in arrays (e.g., lists of objects). Default is 10.
 
 field_overrides: A dictionary of field names with custom values. This allows you to specify custom values for specific fields in the generated data. For example, the email field will always be set to "foo@example.com" and the Name field will always be "Test Name".
 
