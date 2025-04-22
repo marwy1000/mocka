@@ -7,7 +7,7 @@ __version__ = "0.0.2"
 from src.cli import parse_args
 from src.schema_loader import load_schema
 from src.generator import generate_from_schema
-from src.utils import configure_faker
+from src.utils import configure_faker, load_keyword_faker_map
 
 import json
 import pyperclip
@@ -27,9 +27,12 @@ def main():
 
     schema = load_schema(args.schema)
 
+    keyword_faker_map = load_keyword_faker_map()
+
     result = generate_from_schema(
         schema,
         faker,
+        keyword_faker_map,
         include_optional=args.include_optional,
         infer_from_description=args.infer_from_descriptions,
         blank_mode=args.blank,

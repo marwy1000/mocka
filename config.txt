@@ -1,5 +1,5 @@
 {
-    "locale": ["sv_SE", "it_IT", "en_US", "ja_JP"],
+    "locale": ["sv_SE", "it_IT", "en_US"],
     "seed": 2,
     "providers": ["internet", "address", "company"],
     "custom_words": ["foo", "bar", "baz"],
