@@ -22,14 +22,6 @@ def load_schema(source=None):
 
         return parsed
 
-
-def load_data_options(data_path=None):
-    """Load and return predefined data options from a file."""
-    if data_path:
-        with open(data_path, 'r') as file:
-            return json.load(file)
-    return {}
-
 def get_clipboard_fallback():
     try:
         pyperclip.set_clipboard("windows")  # Force Windows clipboard backend

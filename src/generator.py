@@ -18,7 +18,7 @@ def resolve_ref(root_schema, ref_path):
     return sub_schema
 
 
-def generate_value(prop, options, key_hint=None, faker=None, include_optional=True,
+def generate_value(prop, key_hint=None, faker=None, include_optional=True,
                    infer_from_description=False, root_schema=None, blank_mode=False):
 
     """Generate a random value for a given schema property."""
@@ -30,17 +30,16 @@ def generate_value(prop, options, key_hint=None, faker=None, include_optional=Tr
         # If the referenced schema is an object, delegate to generate_from_schema
         if ref_schema.get("type") == "object":
             return generate_from_schema(
-                ref_schema, options, faker,
+                ref_schema, faker,
                 include_optional, infer_from_description,
                 blank_mode=blank_mode, root_schema=root_schema
             )
         else:
             return generate_value(
-                ref_schema, options, key_hint, faker,
+                ref_schema, key_hint, faker,
                 include_optional, infer_from_description,
                 root_schema, blank_mode
             )
-
 
     # Handle enums
     if "enum" in prop:
@@ -58,12 +57,6 @@ def generate_value(prop, options, key_hint=None, faker=None, include_optional=Tr
             else:
                 return None  # Or raise an error if you want to enforce enum values
         return prop["enum"][0] if blank_mode else random.choice(prop["enum"])
-
-
-    # Use custom options if provided
-    title = prop.get("title", key_hint)
-    if options and title in options:
-        return "" if blank_mode else random.choice(options[title])
 
     # Infer type from description if no type is provided
     if not prop.get("type") and infer_from_description:
@@ -114,7 +107,6 @@ def generate_value(prop, options, key_hint=None, faker=None, include_optional=Tr
             for item_schema in items:
                 results.append(generate_value(
                     item_schema,
-                    options,
                     key_hint,
                     faker,
                     include_optional,
@@ -127,7 +119,6 @@ def generate_value(prop, options, key_hint=None, faker=None, include_optional=Tr
             for _ in range(random.randint(1, 3)):
                 results.append(generate_value(
                     items,
-                    options,
                     key_hint,
                     faker,
                     include_optional,
@@ -140,7 +131,6 @@ def generate_value(prop, options, key_hint=None, faker=None, include_optional=Tr
     elif t == "object":
         return generate_from_schema(
             prop,
-            options,
             faker,
             include_optional,
             infer_from_description,
@@ -149,7 +139,7 @@ def generate_value(prop, options, key_hint=None, faker=None, include_optional=Tr
 
     return None
 
-def generate_from_schema(schema, options, faker, include_optional=True,
+def generate_from_schema(schema, faker, include_optional=True,
                          infer_from_description=False, blank_mode=False, root_schema=None):
 
     """Generate a full JSON object from the provided schema."""
@@ -161,7 +151,7 @@ def generate_from_schema(schema, options, faker, include_optional=True,
             if not include_optional:
                 continue
         result[key] = generate_value(
-            prop, options, key_hint=key, faker=faker,
+            prop, key_hint=key, faker=faker,
             include_optional=include_optional,
             infer_from_description=infer_from_description,
             root_schema=root_schema or schema,

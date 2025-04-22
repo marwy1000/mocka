@@ -1,12 +1,14 @@
-# mockr - Generate fake JSON data from a schema
+# Mockr - Generate test data based on a JSON schema
 # Copyright (c) - Salih Serdenak
 # License: MIT
-__version__ = "0.0.1"
+__version__ = "0.0.2"
 
 
 from src.cli import parse_args
-from src.schema_loader import load_schema, load_data_options
+from src.schema_loader import load_schema
 from src.generator import generate_from_schema
+from src.utils import configure_faker
+
 import json
 import pyperclip
 from pathlib import Path
@@ -15,22 +17,18 @@ from faker import Faker
 
 def main():
     args = parse_args()
-    faker = Faker()
-    seed = args.seed if args.seed else random.randint(1, 999999)
-    random.seed(seed)
-    faker.seed_instance(seed)
+    
+    config = {}
+    if args.config:
+        with open(args.config, "r", encoding="utf-8") as f:
+            config = json.load(f)
 
-
-    if args.debug:
-        print(f"[DEBUG] Seed used: {seed}")
+    faker = configure_faker(config, args.seed)
 
     schema = load_schema(args.schema)
 
-    data_options = load_data_options(args.data)
-
     result = generate_from_schema(
         schema,
-        data_options,
         faker,
         include_optional=args.include_optional,
         infer_from_description=args.infer_from_descriptions,

@@ -1,0 +1,11 @@
+{
+    "locale": ["sv_SE", "it_IT", "en_US", "ja_JP"],
+    "seed": 2,
+    "providers": ["internet", "address", "company"],
+    "custom_words": ["foo", "bar", "baz"],
+    "max_array_length": 3,
+    "field_overrides": {
+        "email": "foo@example.com",
+        "Name": "Test Name"
+    }
+}
