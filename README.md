@@ -53,7 +53,6 @@ You can configure the behavior of the app by providing a JSON configuration file
     "locale": ["sv_SE", "it_IT", "en_US"],
     "seed": 2,
     "providers": ["internet", "address", "company"],
-    "custom_words": ["foo", "bar", "baz"],
     "max_array_length": 3,
     "field_overrides": {
         "email": "foo@example.com",
@@ -68,8 +67,6 @@ locale: A list of locales to be used for generating data. If multiple locales ar
 seed: A fixed random seed for reproducible results. This ensures that the generated data will be the same each time you run the tool with the same seed value.
 
 providers: A list of [Faker](https://pypi.org/project/Faker) providers to include for generating data. In this example, the internet, address, and company providers are included. You can add or remove providers depending on your needs. For more providers, refer to the Faker documentation.
-
-custom_words: A list of custom words that can be used in place of default Faker-generated words. You can extend or modify this list to suit your needs.
 
 max_array_length: The maximum length for arrays that are generated. This controls how many items are included in arrays (e.g., lists of objects). Default is 10.
 
