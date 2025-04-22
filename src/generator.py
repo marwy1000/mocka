@@ -22,7 +22,7 @@ def generate_value(prop, keyword_faker_map, field_overrides, key_hint=None, fake
     """Generate a value for a given JSON Schema property."""
 
     # Apply field override if available
-    if field_overrides and key_hint in field_overrides:
+    if not blank_mode and field_overrides and key_hint in field_overrides:
         return field_overrides[key_hint] if blank_mode else field_overrides[key_hint]
 
     if "$ref" in prop:
