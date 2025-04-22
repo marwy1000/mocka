@@ -2,7 +2,6 @@
     "locale": ["sv_SE", "it_IT", "en_US"],
     "seed": 2,
     "providers": ["internet", "address", "company"],
-    "custom_words": ["foo", "bar", "baz"],
     "max_array_length": 10,
     "field_overrides": {
         "email": "foo@example.com",
