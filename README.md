@@ -40,7 +40,7 @@ python .\__main__.py -h
 ### Build an exe
 From the cloned directory:
 ```bash
-pyinstaller --onefile --name mockr ./__main__.py
+python generate_build.py
 cd dist
 mockr.exe -h
 ```
