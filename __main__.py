@@ -3,7 +3,9 @@
 # License: MIT
 __version__ = "0.0.2"
 
-
+import json
+from pathlib import Path
+import pyperclip
 from src.cli import parse_args
 from src.schema_loader import load_schema
 from src.generator import (
@@ -11,11 +13,7 @@ from src.generator import (
     set_max_array_length,
     DEFAULT_MAX_ARRAY_LENGTH,
 )
-from src.utils import configure_faker, load_keyword_faker_map
-
-import json
-import pyperclip
-from pathlib import Path
+from src.utils import configure_faker, DEFAULT_KEYWORD_FAKER_MAP
 
 
 def main():
@@ -32,7 +30,7 @@ def main():
 
     schema = load_schema(args.schema)
 
-    keyword_faker_map = load_keyword_faker_map()
+    keyword_faker_map = config.get("keyword_matching", DEFAULT_KEYWORD_FAKER_MAP)
 
     result = generate_from_schema(
         schema,
@@ -48,7 +46,7 @@ def main():
     output = json.dumps(result, indent=2)
 
     if args.out:
-        Path(args.out).write_text(output)
+        Path(args.out).write_text(output, encoding="utf-8")
         print(f"JSON written to {args.out}")
     else:
         print(output)
