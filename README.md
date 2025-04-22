@@ -50,7 +50,7 @@ You can configure the behavior of the app by providing a JSON configuration file
 
 ```json
 {
-    "locale": ["sv_SE", "it_IT", "en_US", "ja_JP"],
+    "locale": ["sv_SE", "it_IT", "en_US"],
     "seed": 2,
     "providers": ["internet", "address", "company"],
     "custom_words": ["foo", "bar", "baz"],
@@ -81,5 +81,6 @@ mockr myschema.json --config config.txt
 ```
 
 ## TODO
-Improved debug
-Improve built performance
+- Improved debug to cover the whole file, maybe add proper logging.
+- Improve built performance. The executable is slow while the script is fast.
+- Improve and define clearer how seeding should work. Repeat keys should have different values, but if the same seed is used the values should repeat.
