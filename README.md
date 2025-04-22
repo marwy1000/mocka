@@ -84,3 +84,4 @@ mockr myschema.json --config config.txt
 - Improved debug to cover the whole file, maybe add proper logging.
 - Improve built performance. The executable is slow while the script is fast.
 - Improve and define clearer how seeding should work. Repeat keys should have different values, but if the same seed is used the values should repeat.
+- Unify the two config files

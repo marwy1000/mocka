@@ -1,5 +1,11 @@
 import random
 from faker import Faker
+DEFAULT_MAX_ARRAY_LENGTH = 10
+MAX_ARRAY_LENGTH = DEFAULT_MAX_ARRAY_LENGTH
+
+def set_max_array_length(value):
+    global MAX_ARRAY_LENGTH
+    MAX_ARRAY_LENGTH = value
 
 def resolve_ref(root_schema, ref_path):
     """Resolve a $ref like '#/definitions/Thing' into a schema dict."""
@@ -17,7 +23,7 @@ def resolve_ref(root_schema, ref_path):
     return sub_schema
 
 
-def generate_value(prop, keyword_faker_map, field_overrides, max_array_length, key_hint=None, faker=None, include_optional=True,
+def generate_value(prop, keyword_faker_map, field_overrides, key_hint=None, faker=None, include_optional=True,
                    infer_from_description=False, root_schema=None, blank_mode=False):
     """Generate a value for a given JSON Schema property."""
 
@@ -31,12 +37,12 @@ def generate_value(prop, keyword_faker_map, field_overrides, max_array_length, k
         ref_schema = resolve_ref(root_schema, prop["$ref"])
         if ref_schema.get("type") == "object":
             return generate_from_schema(
-                ref_schema, faker, keyword_faker_map, field_overrides, max_array_length, include_optional, infer_from_description,
+                ref_schema, faker, keyword_faker_map, field_overrides, include_optional, infer_from_description,
                 blank_mode=blank_mode, root_schema=root_schema
             )
         else:
             return generate_value(
-                ref_schema, keyword_faker_map, field_overrides, max_array_length, key_hint, faker,
+                ref_schema, keyword_faker_map, field_overrides, key_hint, faker,
                 include_optional, infer_from_description,
                 root_schema, blank_mode
             )
@@ -79,21 +85,22 @@ def generate_value(prop, keyword_faker_map, field_overrides, max_array_length, k
         if isinstance(items, list):
             for item_schema in items:
                 results.append(generate_value(
-                    item_schema, keyword_faker_map, field_overrides, max_array_length, key_hint, faker, include_optional,
+                    item_schema, keyword_faker_map, field_overrides, key_hint, faker, include_optional,
                     infer_from_description, root_schema=root_schema, blank_mode=blank_mode
                 ))
         else:
-            max_array_length = random.randint(1, max_array_length)
-            for _ in range(max_array_length):
+            array_length = random.randint(1, MAX_ARRAY_LENGTH)
+            input(array_length)
+            for _ in range(array_length):
                 results.append(generate_value(
-                    items, keyword_faker_map, field_overrides, max_array_length, key_hint, faker, include_optional,
+                    items, keyword_faker_map, field_overrides, key_hint, faker, include_optional,
                     infer_from_description, root_schema=root_schema, blank_mode=blank_mode
                 ))
         return results
 
     elif t == "object":
         return generate_from_schema(
-            prop, faker, keyword_faker_map, field_overrides, max_array_length, include_optional, infer_from_description, root_schema=root_schema
+            prop, faker, keyword_faker_map, field_overrides, include_optional, infer_from_description, root_schema=root_schema
         )
 
     return None
@@ -122,7 +129,7 @@ def generate_faker_value_from_key(description, key_hint, blank_mode, faker, keyw
 
 
 
-def generate_from_schema(schema, faker, keyword_faker_map, field_overrides, max_array_length, include_optional=True,
+def generate_from_schema(schema, faker, keyword_faker_map, field_overrides, include_optional=True,
                          infer_from_description=False, blank_mode=False, root_schema=None):
 
     """Generate a full JSON object from the provided schema."""
@@ -134,7 +141,7 @@ def generate_from_schema(schema, faker, keyword_faker_map, field_overrides, max_
             if not include_optional:
                 continue
         result[key] = generate_value(
-            prop, keyword_faker_map, field_overrides, max_array_length, key_hint=key, faker=faker,
+            prop, keyword_faker_map, field_overrides, key_hint=key, faker=faker,
             include_optional=include_optional,
             infer_from_description=infer_from_description,
             root_schema=root_schema or schema,
