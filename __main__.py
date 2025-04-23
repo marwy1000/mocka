@@ -25,7 +25,7 @@ def main():
         root_schema=schema,
     )
 
-    output = json.dumps(result, indent=2)
+    output = json.dumps(result, ensure_ascii=False, indent=2) # This enables UTF-8 for the json.dump
 
     if args.out:
         Path(args.out).write_text(output, encoding="utf-8")
