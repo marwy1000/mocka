@@ -97,7 +97,3 @@ field_overrides: A dictionary of field names with custom values. This allows you
 ```bash
 mockr myschema.json --config config.txt
 ```
-
-## TODO
-- Improved debug to cover the whole file, maybe add proper logging.
-- Improve built performance. The executable is slow while the script is fast.
