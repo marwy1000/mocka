@@ -1,5 +1,10 @@
+"""
+Module for loading and verifying loaded files
+"""
+
 import json
 import sys
+import tkinter as tk
 import pyperclip
 
 
@@ -22,14 +27,20 @@ def load_schema(source=None):
         return parsed
 
 
+def load_config(config_path):
+    config = {}
+    if config_path:
+        with open(config_path, "r", encoding="utf-8") as f:
+            config = json.load(f)
+    return config
+
+
 def get_clipboard_fallback():
     try:
         pyperclip.set_clipboard("windows")  # Force Windows clipboard backend
         return pyperclip.paste()
     except Exception:
         try:
-            import tkinter as tk
-
             r = tk.Tk()
             r.withdraw()
             return r.clipboard_get()
