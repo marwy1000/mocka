@@ -76,7 +76,7 @@ You can configure the behavior of the app by providing a JSON configuration file
             { "keywords": ["state", "province", "region"], "method": "state" },
             { "keywords": ["url", "uri", "website", "web"], "method": "uri" },
             { "keywords": ["username", "user name", "login"], "method": "user_name" },
-            { "keywords": ["ip", "ipv4", "ipv6"], "method": "ipv4" },
+            { "keywords": ["ipv4", "ipv6"], "method": "ipv4" },
             { "keywords": ["name", "title", "namn"], "method": "name" }
         ]
 }
@@ -101,5 +101,3 @@ mockr myschema.json --config config.txt
 ## TODO
 - Improved debug to cover the whole file, maybe add proper logging.
 - Improve built performance. The executable is slow while the script is fast.
-- Improve and define clearer how seeding should work. Repeat keys should have different values, but if the same seed is used the values should repeat.
-- Unify the two config files

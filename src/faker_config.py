@@ -1,3 +1,7 @@
+"""
+Functions for initiating and configuring Faker
+"""
+
 import importlib
 import random
 from faker import Faker
@@ -12,7 +16,7 @@ DEFAULT_KEYWORD_FAKER_MAP = [
     },
     {
         "keywords": ["date", "datum"],
-        "method": "date_of_birth",  # Example: could be `date_of_birth` or something else depending on your needs
+        "method": "date_of_birth",
         "args": {},
         "wrap": "str",
     },
@@ -21,7 +25,7 @@ DEFAULT_KEYWORD_FAKER_MAP = [
         "keywords": ["number", "nummer", "amount"],
         "method": "random_int",
         "args": {"min": 0, "max": 10000},
-        "wrap": "str",  # Wrap to string for consistency
+        "wrap": "str",
     },
     {
         "keywords": ["address", "location", "street", "adress"],
@@ -43,11 +47,16 @@ DEFAULT_KEYWORD_FAKER_MAP = [
     },
     {
         "keywords": ["birthdate", "dob", "date of birth"],
-        "method": "date_of_birth",  # Example: could be any other relevant Faker method
+        "method": "date_of_birth",
         "args": {},
         "wrap": "str",
     },
 ]
+
+
+def get_keyword_faker_map(config):
+    keyword_faker_map = config.get("keyword_matching", DEFAULT_KEYWORD_FAKER_MAP)
+    return keyword_faker_map
 
 
 def configure_faker(config: dict = None, args_seed=None):

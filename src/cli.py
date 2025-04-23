@@ -1,7 +1,14 @@
+"""
+Provides command-line argument parsing for the mockr tool.
+"""
+
 import argparse
 
 
 def parse_args():
+    """
+    Parse command-line arguments for the mockr JSON generation tool.
+    """
     parser = argparse.ArgumentParser(description="Generate fake JSON from schema.")
     parser.add_argument(
         "schema", nargs="?", help="Path to schema file (defaults to clipboard)"
@@ -10,20 +17,22 @@ def parse_args():
     parser.add_argument("--config", "-c", help="Python Faker Config")
     parser.add_argument("--seed", "-s", type=int, help="Random seed (optional)")
     parser.add_argument("--debug", "-d", action="store_true", help="Print debug info")
-    parser.add_argument(
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument(
         "--include-optional",
         "-io",
         action="store_true",
-        default=True,
-        help="Include optional fields (default: true)",
+        dest="include_optional",
+        help="Include optional fields (default)",
     )
-    parser.add_argument(
+    group.add_argument(
         "--no-optional",
         "-no",
-        dest="include_optional",
         action="store_false",
+        dest="include_optional",
         help="Don't include optional fields",
     )
+    parser.set_defaults(include_optional=True)
     parser.add_argument(
         "--infer-from-descriptions",
         "-i",
