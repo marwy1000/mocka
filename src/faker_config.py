@@ -80,7 +80,7 @@ def configure_faker(config: dict = None, args_seed=None):
 
     # Seed from CLI arg or config
     seed = args_seed if args_seed is not None else config.get("seed")
-    if seed is None:
+    if seed is None or seed == 0:
         seed = random.randint(1, 999999)
     faker.seed_instance(seed)
     random.seed(seed)
