@@ -34,7 +34,7 @@ def parse_args():
     )
     parser.set_defaults(include_optional=True)
     parser.add_argument(
-        "--infer-from-descriptions",
+        "--infer",
         "-i",
         action="store_true",
         default=False,

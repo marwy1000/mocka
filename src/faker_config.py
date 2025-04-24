@@ -48,7 +48,7 @@ DEFAULT_KEYWORD_FAKER_MAP = [
     {
         "keywords": ["birthdate", "dob", "date of birth"],
         "method": "date_of_birth",
-        "args": {},
+        "args": {"min": 0, "max": 100},
         "wrap": "str",
     },
 ]
