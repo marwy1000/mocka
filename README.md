@@ -61,7 +61,7 @@ You can configure the behavior of the app by providing a JSON based configuratio
 ### Configuration Options:
 locale: A list of locales to be used for generating data. If multiple locales are provided, one will be chosen randomly each time the tool runs. You can specify any valid locale supported by the Faker library (e.g., en_US, sv_SE, it_IT, ja_JP).
 
-seed: A fixed random seed for reproducible results. This ensures that the generated data will be the same each time you run the tool with the same seed value.
+seed: A fixed random seed for reproducible results. This ensures that the generated data will be the same each time you run the tool with the same seed value. 0 sets it back to random. Is useful as options input overrides the config file.
 
 providers: A list of [Faker](https://pypi.org/project/Faker) providers to include for generating data. In this example, the internet, address, and company providers are included. You can add or remove providers depending on your needs. For more providers, refer to the Faker documentation.
 
