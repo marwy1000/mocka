@@ -41,46 +41,22 @@ python .\__main__.py -h
 From the cloned directory:
 ```bash
 python generate_build.py
+```
+
+To see options and help
+```bash
 cd dist
-mockr.exe -h
+.\mockr.exe -h
+```
+
+To verify it
+```bash
+cd dist
+.\mockr.exe -c app.config .\\pathtomyschema.json
 ```
 
 ## Config File Example
-You can configure the behavior of the app by providing a JSON configuration file. Below is an example of a config file:
-
-```json
-{
-    "locale": ["sv_SE", "it_IT", "en_US"],
-    "seed": 2,
-    "providers": ["internet", "address", "company"],
-    "max_array_length": 3,
-    "field_overrides": {
-        "email": "foo@example.com",
-        "Name": "Test Name"
-    },
-    "keyword_matching":
-        [
-            { "keywords": ["email", "e-mail", "mail"], "method": "email" },
-            { "keywords": ["date", "datum"], "method": "date" },
-            { "keywords": ["dob", "birthday", "birth"], "method": "date_of_birth", "args": { "minimum_age": 18, "maximum_age": 90 } },
-            { "keywords": ["description", "descr", "summary", "text", "comment", "content"], "method": "sentence", "args": { "nb_words": 12 } },
-            { "keywords": ["number", "nummer", "amount", "antal"], "method": "random_int", "wrap": "str", "args": { "min": 0, "max": 10000 } },
-            { "keywords": ["status", "type", "label"], "method": "word" },
-            { "keywords": ["address", "location", "street", "adress"], "method": "address" },
-            { "keywords": ["company", "firm", "organization", "OrganizationName"], "method": "company" },
-            { "keywords": ["ssn", "social security", "personnummer"], "method": "ssn" },
-            { "keywords": ["phone", "tel", "mobile"], "method": "phone_number" },
-            { "keywords": ["zip", "postcode", "postal", "postnummer"], "method": "postcode" },
-            { "keywords": ["city", "town", "stad"], "method": "city" },
-            { "keywords": ["country", "nation"], "method": "country" },
-            { "keywords": ["state", "province", "region"], "method": "state" },
-            { "keywords": ["url", "uri", "website", "web"], "method": "uri" },
-            { "keywords": ["username", "user name", "login"], "method": "user_name" },
-            { "keywords": ["ipv4", "ipv6"], "method": "ipv4" },
-            { "keywords": ["name", "title", "namn"], "method": "name" }
-        ]
-}
-```
+You can configure the behavior of the app by providing a JSON based configuration file. You can find an example in the path .\dist\app.config where the executable will be created.
 
 ### Configuration Options:
 locale: A list of locales to be used for generating data. If multiple locales are provided, one will be chosen randomly each time the tool runs. You can specify any valid locale supported by the Faker library (e.g., en_US, sv_SE, it_IT, ja_JP).
@@ -95,5 +71,5 @@ field_overrides: A dictionary of field names with custom values. This allows you
 
 ### Usage
 ```bash
-mockr myschema.json --config config.txt
+mockr myschema.json --config app.config
 ```

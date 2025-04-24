@@ -1,4 +1,5 @@
 __pycache__
 build
-dist
+dist/*.exe
+dist/*.py
 mockr.spec
