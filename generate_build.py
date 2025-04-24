@@ -8,15 +8,13 @@ def build():
         "pyinstaller",
         "--onefile",
         "--clean",
+        "--strip",
         "--noconfirm",
         "--disable-windowed-traceback",
         "--optimize", "2",
         "--name", "mockr",
         "./__main__.py"
     ]
-
-    if sys.platform != "win32":
-        cmd.append("--strip")
 
     result = subprocess.run(cmd)
 

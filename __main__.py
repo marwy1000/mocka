@@ -13,27 +13,30 @@ from src.faker_config import configure_faker
 
 
 def main():
-    args = parse_args()
-    schema = load_schema(args.schema)
-    config = load_config(args.config)
-    faker = configure_faker(config, args.seed)
-    result = generate_from_schema(
-        schema,
-        config,
-        args,
-        faker,
-        root_schema=schema,
-    )
+    try:
+        args = parse_args()
+        schema = load_schema(args.schema)
+        config = load_config(args.config)
+        faker = configure_faker(config, args.seed)
+        result = generate_from_schema(
+            schema,
+            config,
+            args,
+            faker,
+            root_schema=schema,
+        )
 
-    output = json.dumps(result, ensure_ascii=False, indent=2) # This enables UTF-8 for the json.dump
+        output = json.dumps(result, ensure_ascii=False, indent=2) # This enables UTF-8 for the json.dump
 
-    if args.out:
-        Path(args.out).write_text(output, encoding="utf-8")
-        print(f"JSON written to {args.out}")
-    else:
-        print(output)
+        if args.out:
+            Path(args.out).write_text(output, encoding="utf-8")
+            print(f"JSON written to {args.out}")
+        else:
+            print(output)
 
-    pyperclip.copy(output)
+        pyperclip.copy(output)
+    except Exception as e:
+        print(e)
 
 
 if __name__ == "__main__":
