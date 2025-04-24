@@ -46,7 +46,7 @@ def generate_value(
     # Apply field override if available
     field_overrides = config.get("field_overrides", {})
     blank_mode = args.blank
-    infer_from_descriptions = args.infer_from_descriptions
+    infer = args.infer
 
     if not blank_mode and field_overrides and key_hint in field_overrides:
         return field_overrides[key_hint] if blank_mode else field_overrides[key_hint]
@@ -59,7 +59,7 @@ def generate_value(
         return handle_enum(prop, blank_mode)
 
     # Infer type from description if no type is provided
-    if not prop.get("type") and infer_from_descriptions:
+    if not prop.get("type") and infer:
         return generate_faker_value_from_key(
             prop.get("description", ""),
             key_hint or "",
@@ -103,7 +103,7 @@ def generate_value(
     return None
 
 
-def generate_faker_value_from_key(description, key_hint, blank_mode, faker, config, infer_from_descriptions=False):
+def generate_faker_value_from_key(description, key_hint, blank_mode, faker, config, infer=False):
     keyword_faker_map = get_keyword_faker_map(config)
 
     key_hint = (key_hint or "").lower()
@@ -120,7 +120,7 @@ def generate_faker_value_from_key(description, key_hint, blank_mode, faker, conf
             return generate_faker_value(entry, faker, blank_mode)
 
     # 3. Optional description+key fuzzy match
-    if infer_from_descriptions:
+    if infer:
         for entry in keyword_faker_map:
             if any(kw.lower() in text for kw in entry["keywords"]):
                 return generate_faker_value(entry, faker, blank_mode)
