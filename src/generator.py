@@ -3,7 +3,6 @@ File should only deal with generating data based on schema
 """
 
 import random
-from src.faker_config import get_keyword_faker_map
 
 DEFAULT_MAX_ARRAY_LENGTH = 10
 
@@ -103,8 +102,10 @@ def generate_value(
     return None
 
 
-def generate_faker_value_from_key(description, key_hint, blank_mode, faker, config, infer=False):
-    keyword_faker_map = get_keyword_faker_map(config)
+def generate_faker_value_from_key(
+    description, key_hint, blank_mode, faker, config, infer=False
+):
+    keyword_faker_map = keyword_faker_map = config.get("keyword_matching", {})
 
     key_hint = (key_hint or "").lower()
     text = f"{description} {key_hint}".lower()
@@ -126,7 +127,6 @@ def generate_faker_value_from_key(description, key_hint, blank_mode, faker, conf
                 return generate_faker_value(entry, faker, blank_mode)
 
     return "" if blank_mode else faker.word()
-
 
 
 def generate_faker_value(entry, faker, blank_mode):

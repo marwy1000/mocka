@@ -7,58 +7,6 @@ import random
 from faker import Faker
 
 
-DEFAULT_KEYWORD_FAKER_MAP = [
-    {
-        "keywords": ["email", "e-mail", "mail"],
-        "method": "email",
-        "args": {},
-        "wrap": "str",
-    },
-    {
-        "keywords": ["date", "datum"],
-        "method": "date_of_birth",
-        "args": {},
-        "wrap": "str",
-    },
-    {"keywords": ["name", "namn"], "method": "name", "args": {}, "wrap": "str"},
-    {
-        "keywords": ["number", "nummer", "amount"],
-        "method": "random_int",
-        "args": {"min": 0, "max": 10000},
-        "wrap": "str",
-    },
-    {
-        "keywords": ["address", "location", "street", "adress"],
-        "method": "address",
-        "args": {},
-        "wrap": "str",
-    },
-    {
-        "keywords": ["company", "firm", "organization"],
-        "method": "company",
-        "args": {},
-        "wrap": "str",
-    },
-    {
-        "keywords": ["ssn", "social security"],
-        "method": "ssn",
-        "args": {},
-        "wrap": "str",
-    },
-    {
-        "keywords": ["birthdate", "dob", "date of birth"],
-        "method": "date_of_birth",
-        "args": {"min": 0, "max": 100},
-        "wrap": "str",
-    },
-]
-
-
-def get_keyword_faker_map(config):
-    keyword_faker_map = config.get("keyword_matching", DEFAULT_KEYWORD_FAKER_MAP)
-    return keyword_faker_map
-
-
 def configure_faker(config: dict = None, args_seed=None):
     """Configure and return a Faker instance based on the given config."""
     config = config or {}

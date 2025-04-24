@@ -34,7 +34,7 @@ pip install -r requirements.txt
 ### Call the script without building and executable file
 To get started and get help, in cloned directory:
 ```bash
-python .\__main__.py -h
+python .\__main__.py --help
 ```
 
 ### Build an exe
@@ -46,17 +46,17 @@ python generate_build.py
 To see options and help
 ```bash
 cd dist
-.\mockr.exe -h
+.\mockr.exe --help
 ```
 
 To verify it
 ```bash
 cd dist
-.\mockr.exe -c app.config .\\pathtomyschema.json
+.\mockr.exe --config app.config .\\pathtomyschema.json
 ```
 
 ## Config File Example
-You can configure the behavior of the app by providing a JSON based configuration file. You can find an example in the path .\dist\app.config where the executable will be created.
+You can configure the behavior of the app by providing a JSON based configuration file. You can find an example in the path .\dist\app.config where the executable will be created. 
 
 ### Configuration Options:
 locale: A list of locales to be used for generating data. If multiple locales are provided, one will be chosen randomly each time the tool runs. You can specify any valid locale supported by the Faker library (e.g., en_US, sv_SE, it_IT, ja_JP).

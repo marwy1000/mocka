@@ -1,7 +1,10 @@
 # Mockr - Generate test data based on a JSON schema
 # Copyright (c) - Salih Serdenak
 # License: MIT
-__version__ = "0.0.2"
+"""
+Mockr is an app that generates a json with testing data based on a JSON schema. This main file initiates the cli, reads files and then calls the function to generate the output
+"""
+__version__ = "0.0.3"
 
 import json
 from pathlib import Path
@@ -26,7 +29,9 @@ def main():
             root_schema=schema,
         )
 
-        output = json.dumps(result, ensure_ascii=False, indent=2) # This enables UTF-8 for the json.dump
+        output = json.dumps(
+            result, ensure_ascii=False, indent=2
+        )  # This enables UTF-8 for the json.dump
 
         if args.out:
             Path(args.out).write_text(output, encoding="utf-8")

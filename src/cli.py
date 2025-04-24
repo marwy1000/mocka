@@ -15,7 +15,12 @@ def parse_args():
     )
     parser.add_argument("--out", "-o", help="Output file (optional)")
     parser.add_argument("--config", "-c", help="Python Faker Config")
-    parser.add_argument("--seed", "-s", type=int, help="Random seed (optional), overrides config. 0 is random")
+    parser.add_argument(
+        "--seed",
+        "-s",
+        type=int,
+        help="Random seed (optional), overrides config. 0 is random",
+    )
     parser.add_argument("--debug", "-d", action="store_true", help="Print debug info")
     group = parser.add_mutually_exclusive_group()
     group.add_argument(
