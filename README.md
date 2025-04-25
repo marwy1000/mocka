@@ -21,20 +21,16 @@ Copyright (C) 2025 Salih Serdenak
 
 1. Clone the repository or copy the script files.
 
-2. (Optional) Create a virtual environment:
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\\Scripts\\activate
-```
-3. Install required packages
+2. Install required packages
 ```bash
 pip install -r requirements.txt
 ```
 ## Usage 
 ### Call the script without building and executable file
-To get started and get help, in cloned directory:
+Verify it and try it out. From the cloned directory:
 ```bash
 python .\__main__.py --help
+python .\__main__.py --config .\\dist\\app.config .\\path_to_schema.json
 ```
 
 ### Build an exe
@@ -43,16 +39,11 @@ From the cloned directory:
 python generate_build.py
 ```
 
-To see options and help
+Then verify it and try it out:
 ```bash
 cd dist
 .\mockr.exe --help
-```
-
-To verify it
-```bash
-cd dist
-.\mockr.exe --config app.config .\\pathtomyschema.json
+.\mockr.exe --config app.config .\\path_to_schema.json
 ```
 
 ## Config File Example
@@ -67,9 +58,4 @@ providers: A list of [Faker](https://pypi.org/project/Faker) providers to includ
 
 max_array_length: The maximum length for arrays that are generated. This controls how many items are included in arrays (e.g., lists of objects). Default is 10.
 
-field_overrides: A dictionary of field names with custom values. This allows you to specify custom values for specific fields in the generated data. For example, the email field will always be set to "foo@example.com" and the Name field will always be "Test Name".
-
-### Usage
-```bash
-mockr myschema.json --config app.config
-```
+field_overrides: A dictionary of field names with custom values. This allows you to specify custom values for specific fields in the generated data. In the example the key "keytoreplacewithdata" will have its data replaced with the string "replacement made".
