@@ -2,7 +2,8 @@
 # Copyright (c) - Salih Serdenak
 # License: MIT
 """
-Mockr is an app that generates a json with testing data based on a JSON schema. This main file initiates the cli, reads files and then calls the function to generate the output
+Mockr is an app that generates a json with testing data based on a JSON schema. 
+This main file initiates the cli, reads files and then calls the function to generate the output
 """
 __version__ = "0.0.3"
 
