@@ -23,36 +23,36 @@ Copyright (C) 2025 Salih Serdenak
 1. Clone the repository or copy the script files.
 
 2. Install required packages
-```bash
+```powershell
 pip install -r requirements.txt
 ```
 ## Usage 
 ### Call the script without building and executable file
 Verify it and try it out. From the cloned directory:
-```bash
+```powershell
 python .\__main__.py --help
 python .\__main__.py .\\path_to_schema.json
 ```
 
 ### Build an exe
 From the cloned directory:
-```bash
+```powershell
 python generate_build.py
 ```
 
 Then verify it and try it out:
-```bash
+```powershell
 cd dist
 .\mockr.exe --version
 .\mockr.exe .\\path_to_schema.json
 ```
 ## Help
-```bash
+```powershell
 .\mockr.exe --help
 ```
 
-```bash
-usage: __main__.py [-h] [--version] [--debug] [--out OUT] [--config CONFIG] [--seed SEED]
+```powershell
+usage: .\mockr.exe [-h] [--version] [--debug] [--out OUT] [--config CONFIG] [--seed SEED]
                    [--include-optional | --no-optional] [--infer] [--blank]
                    [schema]
 
@@ -82,7 +82,7 @@ Just run the script or exe once, pointing to a schema to generate the config fil
 ### Config File Options:
 locale: A list of locales to be used for generating data. If multiple locales are provided, one will be chosen randomly each time the tool runs. You can specify any valid locale supported by the Faker library (e.g., en_US, sv_SE, it_IT, ja_JP).
 
-```bash
+```json
   "locale": [
     "sv_SE", 
     "en_US"
@@ -91,13 +91,13 @@ locale: A list of locales to be used for generating data. If multiple locales ar
 
 seed: A fixed random seed for reproducible results. This ensures that the generated data will be the same each time you run the tool with the same seed value. 0 sets it back to random. Is useful as options input overrides the config file.
 
-```bash
+```json
   "seed": 0
 ```
 
 providers: A list of [Faker](https://pypi.org/project/Faker) providers to include for generating data. In this example, the internet, address, and company providers are included. You can add or remove providers depending on your needs. For more providers, refer to the Faker documentation.
 
-```bash
+```json
   "providers": [
     "internet",
     "address",
@@ -106,7 +106,7 @@ providers: A list of [Faker](https://pypi.org/project/Faker) providers to includ
 ```
 
 max_array_length: The maximum items in generated arrays. Default is 10.
-```bash
+```json
   "max_array_length": 10
 ```
 
@@ -114,23 +114,23 @@ keyword_matching: This is an array that contains objects describing what keys to
 
 The object inside of the array contains a key called keywords. It is an array that can be one or more strings that checks if the keys in the schema contains one of the words, allowing for partial matching, without case sensitivity. 
 
-```bash
+```json
   { "keywords": ["age", "years", "maturity", "duration"], "method": "random_int", "args": { "min": 0, "max": 100 }},
 ```
 
 In addition to the built in faker methods you can also use the method override where you provide which static value you want to override with. 
-```bash
+```json
   { "keywords": ["age"], "method": "override", "args": { "value": 1 }},
 ```
 
 It is also possible to make the matching more fine grained by matching the parent keys. This is done by providing a JSON object instead of a string, where the value is the final key that is being looke for. This matching doesn't allow for partial matches, and is also case insensitive.
-```bash
+```json
   {"keywords": [{"parent": {"child": "age"}}], "method": "override", "args": {"value": 1}},
 ```
 
 # Development
 Be sure to run and fix issues found by these commands before checking in code:
-```bash
+```powershell
 black .\src .\__main__.py
 pylint .\src .\__main__.py  
 ```
