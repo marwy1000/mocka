@@ -30,7 +30,7 @@ pip install -r requirements.txt
 Verify it and try it out. From the cloned directory:
 ```bash
 python .\__main__.py --help
-python .\__main__.py --config .\\dist\\app.config .\\path_to_schema.json
+python .\__main__.py .\\path_to_schema.json
 ```
 
 ### Build an exe
@@ -43,19 +43,69 @@ Then verify it and try it out:
 ```bash
 cd dist
 .\mockr.exe --help
-.\mockr.exe --config app.config .\\path_to_schema.json
+.\mockr.exe .\\path_to_schema.json
 ```
 
 ## Config File Example
-You can configure the behavior of the app by providing a JSON based configuration file. You can find an example in the path .\dist\app.config where the executable will be created. 
+Just run the script or exe once, pointing to a schema to generate it.
 
-### Configuration Options:
+### Config File Options:
 locale: A list of locales to be used for generating data. If multiple locales are provided, one will be chosen randomly each time the tool runs. You can specify any valid locale supported by the Faker library (e.g., en_US, sv_SE, it_IT, ja_JP).
+
+```bash
+  "locale": [
+    "sv_SE", 
+    "en_US"
+  ]
+```
 
 seed: A fixed random seed for reproducible results. This ensures that the generated data will be the same each time you run the tool with the same seed value. 0 sets it back to random. Is useful as options input overrides the config file.
 
+```bash
+  "seed": 0
+```
+
 providers: A list of [Faker](https://pypi.org/project/Faker) providers to include for generating data. In this example, the internet, address, and company providers are included. You can add or remove providers depending on your needs. For more providers, refer to the Faker documentation.
 
-max_array_length: The maximum length for arrays that are generated. This controls how many items are included in arrays (e.g., lists of objects). Default is 10.
+```bash
+  "providers": [
+    "internet",
+    "address",
+    "company"
+  ]
+```
 
-field_overrides: A dictionary of field names with custom values. This allows you to specify custom values for specific fields in the generated data. In the example the key "keytoreplacewithdata" will have its data replaced with the string "replacement made".
+max_array_length: The maximum items in generated arrays. Default is 10.
+```bash
+  "max_array_length": 10
+```
+
+field_overrides: An array of objects that should match the bottom key and the parent or just a key and replace the value with the override value. In this example when the key productName is matched in the schema, it is set to "PLACE HOLDER". And if ID is found, and its parent key is "product" then the ID value is set to 1.
+```bash
+  "field_overrides": [
+    {"productName": "PLACE HOLDER"},
+    {"product": {"ID": 1}}
+  ]
+```
+
+keyword_matching: This is an array that contains an object describing what keys to match to what faker methods and with what arguments. The keys are "strings" that checks if the key contains the same word. The matching is done from top to bottom.
+
+
+
+# Development
+Be sure to run and fix issues found by these commands before checking in code:
+```bash
+black .\src .\__main__.py
+pylint .\src .\__main__.py  
+```
+
+### TODO
+Move all the field_overrides to keyword_matching.
+Make it so keyword_matching can describe a hierarchy. E.g.:
+```bash
+  "keyword_matching": [
+    {"keywords": ["product ID"], "method": "random_int", "args": {"min": 0, "max": 100}},
+    {"keywords": ["productName"], "method": "override", "args": "PLACE HOLDER"},
+
+  ]
+```

@@ -14,15 +14,14 @@ def generate_from_schema(
     args,
     faker,
     root_schema=None,
+    parent_key=None,
 ):
-    """Generate a full JSON object from the provided schema."""
     result = {}
     properties = schema.get("properties", {})
 
     for key, prop in properties.items():
-        if key not in schema.get("required", []):
-            if not args.include_optional:
-                continue
+        if key not in schema.get("required", []) and not args.include_optional:
+            continue
         result[key] = generate_value(
             prop,
             args,
@@ -30,6 +29,7 @@ def generate_from_schema(
             key_hint=key,
             faker=faker,
             root_schema=root_schema or schema,
+            parent_key=parent_key,
         )
     return result
 
@@ -41,14 +41,16 @@ def generate_value(
     key_hint,
     faker,
     root_schema,
+    parent_key=None,
 ):
     """Generate a value for a given JSON Schema property."""
-    field_overrides = config.get("field_overrides", {})
+    field_overrides = config.get("field_overrides", [])
     blank_mode = args.blank
     infer = args.infer
 
-    if not blank_mode and field_overrides and key_hint in field_overrides:
-        return field_overrides[key_hint]
+    override_value = find_field_override(field_overrides, key_hint, parent_key)
+    if not blank_mode and override_value is not None:
+        return override_value
 
     if "$ref" in prop:
         return resolve_ref_value(prop, args, config, key_hint, faker, root_schema)
@@ -68,32 +70,25 @@ def generate_value(
             infer_text, key_hint, blank_mode, faker, config, t, infer
         )
 
-    if t == "string":
-        if fmt == "uri":
-            return "" if blank_mode else faker.uri()
-        return generate_faker_value_from_key(
-            infer_text, key_hint, blank_mode, faker, config, t, infer
-        )
     try:
+        if t == "string":
+            if fmt == "uri":
+                return "" if blank_mode else faker.uri()
+            return generate_faker_value_from_key(
+                infer_text, key_hint, blank_mode, faker, config, t, infer
+            )
+
         if t == "integer":
             val = generate_faker_value_from_key(
                 infer_text, key_hint, blank_mode, faker, config, t, infer
             )
-            if blank_mode:
-                return 0
-            else:
-                return int(val)
-
+            return 0 if blank_mode else int(val)
 
         if t == "number":
             val = generate_faker_value_from_key(
                 infer_text, key_hint, blank_mode, faker, config, t, infer
             )
-            if blank_mode:
-                return 0.0
-            else:
-                return float(val)
-
+            return 0.0 if blank_mode else float(val)
 
         if t == "boolean":
             return False if blank_mode else faker.boolean()
@@ -102,13 +97,22 @@ def generate_value(
             return generate_array_value(prop, args, config, key_hint, faker, root_schema)
 
         if t == "object":
-            return generate_from_schema(prop, config, args, faker, root_schema)
+            return generate_from_schema(prop, config, args, faker, root_schema, key_hint)
     except ValueError:
         print(f'Key "{key_hint}" matched with "none-{t}" method. Setting generic {t} value')
         return generate_faker_value_default(faker, t)
 
     return None
 
+
+def find_field_override(field_overrides, key_hint, parent_key=None):
+    for entry in field_overrides:
+        if key_hint in entry:
+            return entry[key_hint]
+        if parent_key and parent_key in entry and isinstance(entry[parent_key], dict):
+            if key_hint in entry[parent_key]:
+                return entry[parent_key][key_hint]
+    return None
 
 def generate_faker_value_from_key(
     description, key_hint, blank_mode, faker, config, expected_type, infer
@@ -150,6 +154,8 @@ def generate_faker_value_default(faker, expected_type):
     return faker.word()
 
 
+from datetime import date, datetime
+
 def generate_faker_value(entry, faker, blank_mode, expected_type):
     if blank_mode:
         return ""
@@ -173,17 +179,18 @@ def generate_faker_value(entry, faker, blank_mode, expected_type):
     if expected_type == "string":
         return str(value)
     if expected_type == "integer":
-        # Check if the value is already a number or string that can be converted to an integer
         try:
             return int(value)
-        except ValueError:
-            return 0  # Default to 0 if conversion fails
+        except (ValueError, TypeError):
+            return 0
     if expected_type == "number":
         try:
             return float(value)
-        except ValueError:
-            return 0.0  # Default to 0.0 if conversion fails
+        except (ValueError, TypeError):
+            return 0.0
+
     return value
+
 
 
 def resolve_ref(root_schema, ref_path):
