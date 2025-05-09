@@ -134,3 +134,12 @@ Be sure to run and fix issues found by these commands before checking in code:
 black .\src .\__main__.py
 pylint .\src .\__main__.py  
 ```
+
+## TODO
+* Logging: Incorporate logging to aid in debugging and provide insights during data generation.
+* Integrate a JSON Schema Resolver: Use a library like jsonschema to handle $ref resolution comprehensively, including external references.
+* Improve error handling: By catch user errors in the config file and by verifing the schema clear error messages can be given to the user.
+* Implement Additional Schema Keywords: Extend the code to support oneOf, anyOf, allOf, and not, enabling the handling of more complex schemas.
+* Support Array Constraints: Modify the array generation logic to respect minItems and maxItems constraints specified in the schema.
+* Enhance Configuration Options: Allow users to define patterns, and other constraints directly in the configuration file to customize data generation further.
+* Code Comments and Documentation: Enhance inline comments and provide comprehensive documentation to assist future contributors and users in understanding the codebase.
