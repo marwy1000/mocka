@@ -8,9 +8,9 @@ def build():
         "pyinstaller",
         "--onefile",
         "--clean",
-        "--strip",
         "--noconfirm",
         "--disable-windowed-traceback",
+        "--noupx",
         "--optimize", "2",
         "--name", "mockr",
         "./__main__.py"
