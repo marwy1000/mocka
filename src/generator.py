@@ -14,11 +14,10 @@ def generate_from_schema(
     args,
     faker,
     root_schema=None,
-    parent_key=None,
+    key_path=None,
 ):
     result = {}
     properties = schema.get("properties", {})
-
     for key, prop in properties.items():
         if key not in schema.get("required", []) and not args.include_optional:
             continue
@@ -29,28 +28,16 @@ def generate_from_schema(
             key_hint=key,
             faker=faker,
             root_schema=root_schema or schema,
-            parent_key=parent_key,
+            key_path=(key_path or []) + [key],
         )
     return result
 
 
-def generate_value(
-    prop,
-    args,
-    config,
-    key_hint,
-    faker,
-    root_schema,
-    parent_key=None,
-):
-    """Generate a value for a given JSON Schema property."""
-    field_overrides = config.get("field_overrides", [])
+def generate_value(prop, args, config, key_hint, faker, root_schema, key_path=None):
     blank_mode = args.blank
     infer = args.infer
 
-    override_value = find_field_override(field_overrides, key_hint, parent_key)
-    if not blank_mode and override_value is not None:
-        return override_value
+    # No field_overrides anymore, handled through keyword_matching with "override"
 
     if "$ref" in prop:
         return resolve_ref_value(prop, args, config, key_hint, faker, root_schema)
@@ -67,7 +54,7 @@ def generate_value(
 
     if not t and infer:
         return generate_faker_value_from_key(
-            infer_text, key_hint, blank_mode, faker, config, t, infer
+            infer_text, key_hint, blank_mode, faker, config, t, infer, key_path=key_path
         )
 
     try:
@@ -75,18 +62,18 @@ def generate_value(
             if fmt == "uri":
                 return "" if blank_mode else faker.uri()
             return generate_faker_value_from_key(
-                infer_text, key_hint, blank_mode, faker, config, t, infer
+                infer_text, key_hint, blank_mode, faker, config, t, infer, key_path
             )
 
         if t == "integer":
             val = generate_faker_value_from_key(
-                infer_text, key_hint, blank_mode, faker, config, t, infer
+                infer_text, key_hint, blank_mode, faker, config, t, infer, key_path
             )
             return 0 if blank_mode else int(val)
 
         if t == "number":
             val = generate_faker_value_from_key(
-                infer_text, key_hint, blank_mode, faker, config, t, infer
+                infer_text, key_hint, blank_mode, faker, config, t, infer, key_path
             )
             return 0.0 if blank_mode else float(val)
 
@@ -94,67 +81,81 @@ def generate_value(
             return False if blank_mode else faker.boolean()
 
         if t == "array":
-            return generate_array_value(prop, args, config, key_hint, faker, root_schema)
+            return generate_array_value(
+                prop, args, config, key_hint, faker, root_schema
+            )
 
         if t == "object":
-            return generate_from_schema(prop, config, args, faker, root_schema, key_hint)
+            return generate_from_schema(
+                prop, config, args, faker, root_schema, key_path
+            )
+
     except ValueError:
-        print(f'Key "{key_hint}" matched with "none-{t}" method. Setting generic {t} value')
+        print(
+            f'Key "{key_hint}" matched with "none-{t}" method. Setting generic {t} value'
+        )
         return generate_faker_value_default(faker, t)
 
     return None
 
 
-def find_field_override(field_overrides, key_hint, parent_key=None):
-    for entry in field_overrides:
-        if key_hint in entry:
-            return entry[key_hint]
-        if parent_key and parent_key in entry and isinstance(entry[parent_key], dict):
-            if key_hint in entry[parent_key]:
-                return entry[parent_key][key_hint]
-    return None
-
 def generate_faker_value_from_key(
-    description, key_hint, blank_mode, faker, config, expected_type, infer
+    description,
+    key_hint,
+    blank_mode,
+    faker,
+    config,
+    expected_type,
+    infer,
+    key_path=None,
 ):
-    keyword_faker_map = config.get("keyword_matching", {})
-
+    keyword_faker_map = config.get("keyword_matching", [])
     key_hint = (key_hint or "").lower()
     text = f"{description} {key_hint}".lower()
 
-    # 1. Exact keyword match
+    def match_nested_dict(pattern_dict, path):
+        if not isinstance(pattern_dict, dict) or not path:
+            return False
+
+        for parent, child in pattern_dict.items():
+            parent = parent.lower()
+            if isinstance(child, dict):
+                for i in range(len(path) - 1):
+                    if path[i].lower() == parent and match_nested_dict(
+                        child, path[i + 1 :]
+                    ):
+                        return True
+            elif isinstance(child, str):
+                for i in range(len(path) - 1):
+                    if (
+                        path[i].lower() == parent
+                        and path[i + 1].lower() == child.lower()
+                    ):
+                        return True
+        return False
+
+    def match_entry(entry):
+        for kw in entry.get("keywords", []):
+            if isinstance(kw, str) and kw.lower() in key_hint:
+                return True
+            elif isinstance(kw, dict) and match_nested_dict(kw, key_path or []):
+                return True
+        return False
+
     for entry in keyword_faker_map:
-        if key_hint in (kw.lower() for kw in entry["keywords"]):
+        if match_entry(entry):
             return generate_faker_value(entry, faker, blank_mode, expected_type)
 
-    # 2. Partial match in key_hint (e.g. 'enddate' contains 'date')
-    for entry in keyword_faker_map:
-        if any(kw.lower() in key_hint for kw in entry["keywords"]):
-            return generate_faker_value(entry, faker, blank_mode, expected_type)
-
-    # 3. Optional description+key fuzzy match
     if infer:
         for entry in keyword_faker_map:
-            if any(kw.lower() in text for kw in entry["keywords"]):
+            if any(
+                isinstance(kw, str) and kw.lower() in text
+                for kw in entry.get("keywords", [])
+            ):
                 return generate_faker_value(entry, faker, blank_mode, expected_type)
 
     return "" if blank_mode else generate_faker_value_default(faker, expected_type)
 
-
-def generate_faker_value_default(faker, expected_type):
-    # Default value generation based on expected_type
-    if expected_type == "string":
-        return faker.word()
-    if expected_type == "integer":
-        return faker.random_int(min=0, max=10000)
-    if expected_type == "number":
-        return faker.pyfloat(left_digits=2, right_digits=2)
-    if expected_type == "boolean":
-        return faker.boolean()
-    return faker.word()
-
-
-from datetime import date, datetime
 
 def generate_faker_value(entry, faker, blank_mode, expected_type):
     if blank_mode:
@@ -162,6 +163,9 @@ def generate_faker_value(entry, faker, blank_mode, expected_type):
 
     method_name = entry["method"]
     args = entry.get("args", {})
+
+    if method_name == "override":
+        return args.get("value", "")
 
     try:
         if hasattr(faker, method_name):
@@ -173,7 +177,6 @@ def generate_faker_value(entry, faker, blank_mode, expected_type):
         print(f"Error generating value for '{method_name}': {e}")
         value = ""
 
-    # Normalize based on type
     if isinstance(value, (date, datetime)):
         return value.isoformat()
     if expected_type == "string":
@@ -192,9 +195,19 @@ def generate_faker_value(entry, faker, blank_mode, expected_type):
     return value
 
 
+def generate_faker_value_default(faker, expected_type):
+    if expected_type == "string":
+        return faker.word()
+    if expected_type == "integer":
+        return faker.random_int(min=0, max=10000)
+    if expected_type == "number":
+        return faker.pyfloat(left_digits=2, right_digits=2)
+    if expected_type == "boolean":
+        return faker.boolean()
+    return faker.word()
+
 
 def resolve_ref(root_schema, ref_path):
-    """Resolve a $ref like '#/definitions/Thing' into a schema dict."""
     if not ref_path.startswith("#/"):
         raise ValueError(f"Unsupported $ref format: {ref_path}")
 
@@ -247,3 +260,21 @@ def generate_array_value(prop, args, config, key_hint, faker, root_schema):
                 generate_value(items, args, config, key_hint, faker, root_schema)
             )
     return results
+
+# used when loading the schema
+def resolve_all_refs(schema, root_schema=None):
+    if root_schema is None:
+        root_schema = schema
+
+    if isinstance(schema, dict):
+        if "$ref" in schema:
+            resolved = resolve_ref(root_schema, schema["$ref"])
+            return resolve_all_refs(resolved, root_schema)
+        return {
+            k: resolve_all_refs(v, root_schema)
+            for k, v in schema.items()
+        }
+    elif isinstance(schema, list):
+        return [resolve_all_refs(item, root_schema) for item in schema]
+
+    return schema

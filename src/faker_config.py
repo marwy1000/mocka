@@ -50,7 +50,6 @@ app_config = {
   "seed": 0,
   "providers": ["internet", "address", "company"],
   "max_array_length": 10,
-  "field_overrides": [],
   "keyword_matching":
     [
       { "keywords": ["email", "e-mail", "mail"], "method": "email" },
@@ -60,8 +59,8 @@ app_config = {
       { "keywords": ["currency"], "method": "currency_code" },
       { "keywords": ["languagecode"], "method": "language_code" },
       { "keywords": ["countrycode"], "method": "country_code" },
-      { "keywords": ["articlename", "artikelnamn", "productname", "produktnamn", "application name", "project name"], "method": "bs" },
-      { "keywords": ["role", "job"], "method": "job" },
+      { "keywords": ["articlename", "artikelnamn", "productname", "produktnamn", "project", {"project": "name"}, {"application": "name"}], "method": "bs" },
+      { "keywords": ["role", "job", {"businessrole": "name"}], "method": "job" },
       { "keywords": ["ssn", "socialsecurity", "personnummer"], "method": "ssn" },
       { "keywords": ["phone", "tel", "mobile"], "method": "phone_number" },
       { "keywords": ["street", "road", "avenue", "gata", "address1", "address2"], "method": "street_name" },
