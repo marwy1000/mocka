@@ -13,8 +13,9 @@ def parse_args():
     parser.add_argument(
         "schema", nargs="?", help="Path to schema file (defaults to clipboard)"
     )
-    parser.add_argument("--out", "-o", help="Output file (optional)")
-    parser.add_argument("--config", "-c", help="Python Faker Config")
+    parser.add_argument("--out", "-o", help="Output file (optional), instead of console and clipboard.")
+    parser.add_argument("--config", "-c", default="app.config",
+        help="Mockr config file (will create and use the default if no input given).")
     parser.add_argument(
         "--seed",
         "-s",
@@ -51,5 +52,10 @@ def parse_args():
         action="store_true",
         help="Generate blank values (empty strings, 0s, false, first enum, etc.)",
     )
-
+    parser.add_argument(
+        "--version",
+        "-v",
+        action="store_true",
+        help="Print version and exit"
+    )
     return parser.parse_args()
