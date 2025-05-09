@@ -14,8 +14,9 @@ def parse_args():
         "schema", nargs="?", help="Path to schema file (defaults to clipboard)"
     )
     parser.add_argument(
-        "--out", "-o", help="Output file (optional), instead of console and clipboard."
+        "--version", "-v", action="store_true", help="Show version and exit"
     )
+    parser.add_argument("--debug", "-d", action="store_true", help="Print debug info")
     parser.add_argument(
         "--config",
         "-c",
@@ -23,12 +24,14 @@ def parse_args():
         help="Mockr config file (will create and use the default if no input given).",
     )
     parser.add_argument(
+        "--out", "-o", help="Output file (optional), instead of console and clipboard."
+    )
+    parser.add_argument(
         "--seed",
         "-s",
         type=int,
         help="Random seed (optional), overrides config. 0 is random",
     )
-    parser.add_argument("--debug", "-d", action="store_true", help="Print debug info")
     group = parser.add_mutually_exclusive_group()
     group.add_argument(
         "--include-optional",
@@ -48,17 +51,13 @@ def parse_args():
     parser.add_argument(
         "--infer",
         "-i",
-        action="store_true",
-        default=False,
-        help="Infer type from description if not provided",
+        action="store_false",
+        help="Infer type from description and title if provided",
     )
     parser.add_argument(
         "--blank",
         "-b",
         action="store_true",
         help="Generate blank values (empty strings, 0s, false, first enum, etc.)",
-    )
-    parser.add_argument(
-        "--version", "-v", action="store_true", help="Print version and exit"
     )
     return parser.parse_args()
