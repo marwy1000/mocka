@@ -10,7 +10,8 @@ Copyright (C) 2025 Salih Serdenak
 
 ## Features
 - Generate data based on a JSON Schema
-- Override specific field values with a predefined list
+- Define how data is generated 
+- Override specific values with a fixed value
 - Copy result to clipboard automatically
 - Output to console or file
 
@@ -47,7 +48,7 @@ cd dist
 ```
 
 ## Config File Example
-Just run the script or exe once, pointing to a schema to generate it.
+Just run the script or exe once, pointing to a schema to generate the config file.
 
 ### Config File Options:
 locale: A list of locales to be used for generating data. If multiple locales are provided, one will be chosen randomly each time the tool runs. You can specify any valid locale supported by the Faker library (e.g., en_US, sv_SE, it_IT, ja_JP).
@@ -80,32 +81,27 @@ max_array_length: The maximum items in generated arrays. Default is 10.
   "max_array_length": 10
 ```
 
-field_overrides: An array of objects that should match the bottom key and the parent or just a key and replace the value with the override value. In this example when the key productName is matched in the schema, it is set to "PLACE HOLDER". And if ID is found, and its parent key is "product" then the ID value is set to 1.
+keyword_matching: This is an array that contains objects describing what keys to match to what faker methods and with what arguments. The matching is done from top to bottom. 
+
+The object inside of the array contains a key called keywords. It is an array that can be one or more strings that checks if the keys in the schema contains one of the words, allowing for partial matching, without case sensitivity. 
+
 ```bash
-  "field_overrides": [
-    {"productName": "PLACE HOLDER"},
-    {"product": {"ID": 1}}
-  ]
+  { "keywords": ["age", "years", "maturity", "duration"], "method": "random_int", "args": { "min": 0, "max": 100 }},
 ```
 
-keyword_matching: This is an array that contains an object describing what keys to match to what faker methods and with what arguments. The keys are "strings" that checks if the key contains the same word. The matching is done from top to bottom.
+In addition to the built in faker methods you can also use the method override where you provide which static value you want to override with. 
+```bash
+  { "keywords": ["age"], "method": "override", "args": { "value": 1 }},
+```
 
-
+It is also possible to make the matching more fine grained by matching the parent keys. This is done by providing a JSON object instead of a string, where the value is the final key that is being looke for. This matching doesn't allow for partial matches, and is also case insensitive.
+```bash
+  {"keywords": [{"parent": {"child": "age"}}], "method": "override", "args": {"value": 1}},
+```
 
 # Development
 Be sure to run and fix issues found by these commands before checking in code:
 ```bash
 black .\src .\__main__.py
 pylint .\src .\__main__.py  
-```
-
-### TODO
-Move all the field_overrides to keyword_matching.
-Make it so keyword_matching can describe a hierarchy. E.g.:
-```bash
-  "keyword_matching": [
-    {"keywords": ["product ID"], "method": "random_int", "args": {"min": 0, "max": 100}},
-    {"keywords": ["productName"], "method": "override", "args": "PLACE HOLDER"},
-
-  ]
 ```

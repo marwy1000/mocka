@@ -6,6 +6,7 @@ import json
 import sys
 import tkinter as tk
 import pyperclip
+from .generator import resolve_all_refs
 
 
 def load_schema(source=None):
@@ -13,7 +14,7 @@ def load_schema(source=None):
         try:
             with open(source, "r", encoding="utf-8") as f:
                 parsed_schema = json.load(f)
-                return parsed_schema
+                return resolve_all_refs(parsed_schema)
         except FileNotFoundError:
             print(f"Schema file not found: {source}")
         except json.JSONDecodeError as e:
@@ -36,7 +37,7 @@ def load_schema(source=None):
         if not isinstance(parsed_schema, dict):
             print("Error: Clipboard JSON is not an object.")
             sys.exit(1)
-        return parsed_schema
+        return resolve_all_refs(parsed_schema)
 
 
 def load_config(config_path):

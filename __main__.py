@@ -2,10 +2,9 @@
 # Copyright (c) - Salih Serdenak
 # License: MIT
 """
-Mockr is an app that generates a json with testing data based on a JSON schema. 
 This main file initiates the cli, reads files and then calls the function to generate the output
 """
-__version__ = "0.0.4"
+__version__ = "0.0.5"
 
 import json
 from pathlib import Path
@@ -15,8 +14,6 @@ from src.generator import generate_from_schema
 from src.file_loader import load_schema, load_config
 from src.faker_config import configure_faker, app_config
 
-
-import json
 
 def save_custom_json(data: dict, filepath: str):
     with open(filepath, "w", encoding="utf-8") as f:
@@ -28,13 +25,14 @@ def save_custom_json(data: dict, filepath: str):
                 f.write("[\n")
                 for i, item in enumerate(value):
                     comma = "," if i < len(value) - 1 else ""
-                    f.write(f'    {json.dumps(item)}{comma}\n')
+                    f.write(f"    {json.dumps(item)}{comma}\n")
                 f.write("  ]")
             else:
                 f.write(json.dumps(value))
             comma = "," if key != last_key else ""
             f.write(f"{comma}\n")
         f.write("}\n")
+
 
 def main():
     try:
@@ -50,8 +48,7 @@ def main():
             # config_path.write_text(json.dumps(app_config, indent=2, ensure_ascii=False, sort_keys=True), encoding="utf-8")
 
             save_custom_json(app_config, "app.config")
-            print('Generated the config file app.config')
-
+            print("Generated the config file app.config")
 
         schema = load_schema(args.schema)
         config = load_config(args.config)
