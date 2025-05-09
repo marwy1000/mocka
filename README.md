@@ -12,8 +12,8 @@ Copyright (C) 2025 Salih Serdenak
 - Generate data based on a JSON Schema
 - Define how data is generated 
 - Override specific values with a fixed value
-- Copy result to clipboard automatically
-- Output to console or file
+- Take input from the clipboard or a file
+- Output to console, clipboard or file
 
 ## Requirements
 - Python 3.8 or higher
@@ -43,8 +43,37 @@ python generate_build.py
 Then verify it and try it out:
 ```bash
 cd dist
-.\mockr.exe --help
+.\mockr.exe --version
 .\mockr.exe .\\path_to_schema.json
+```
+## Help
+```bash
+.\mockr.exe --help
+```
+
+```bash
+usage: __main__.py [-h] [--version] [--debug] [--out OUT] [--config CONFIG] [--seed SEED]
+                   [--include-optional | --no-optional] [--infer] [--blank]
+                   [schema]
+
+Generate fake JSON from schema.
+
+positional arguments:
+  schema                Path to schema file (defaults to clipboard)
+
+options:
+  -h, --help            show this help message and exit
+  --version, -v         Show version and exit
+  --debug, -d           Print debug info
+  --out OUT, -o OUT     Output file (optional), instead of console and clipboard.
+  --config CONFIG, -c CONFIG
+                        Mockr config file (will create and use the default if no input given).
+  --seed SEED, -s SEED  Random seed (optional), overrides config. 0 is random
+  --include-optional, -io
+                        Include optional fields (default)
+  --no-optional, -no    Don't include optional fields
+  --infer, -i           Infer type from description and title if provided
+  --blank, -b           Generate blank values (empty strings, 0s, false, first enum, etc.)
 ```
 
 ## Config File Example
