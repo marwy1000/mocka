@@ -6,14 +6,23 @@ This main file initiates the cli, reads files and then calls the function to gen
 """
 __version__ = "0.0.5"
 
+import sys
 import json
 from pathlib import Path
 import pyperclip
+import logging
+logger = logging.getLogger(__name__)
 from src.cli import parse_args
 from src.generator import generate_from_schema
 from src.file_loader import load_schema, load_config
 from src.faker_config import configure_faker, app_config
 
+def setup_logging(debug: bool = False):
+    level = logging.DEBUG if debug else logging.INFO
+    logging.basicConfig(
+        level=level,
+        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+    )
 
 def save_custom_json(data: dict, filepath: str):
     with open(filepath, "w", encoding="utf-8") as f:
@@ -38,17 +47,20 @@ def main():
     try:
         args = parse_args()
 
+        setup_logging(args.debug)
+
         if args.version:
             print(f"{__version__}")
             return
 
         config_path = Path(args.config)
         if not config_path.exists():
-            # Save default app_config to app.config
-            # config_path.write_text(json.dumps(app_config, indent=2, ensure_ascii=False, sort_keys=True), encoding="utf-8")
-
-            save_custom_json(app_config, "app.config")
-            print("Generated the config file app.config")
+            if (args.config == "app.config"):
+                logger.info("Generated the config file app.config")
+                save_custom_json(app_config, "app.config")
+            else:
+                logger.error(f"Config file missing: {config_path}")
+                sys.exit(1)
 
         schema = load_schema(args.schema)
         config = load_config(args.config)
@@ -65,7 +77,7 @@ def main():
 
         if args.out:
             Path(args.out).write_text(output, encoding="utf-8")
-            print(f"JSON written to {args.out}")
+            logger.info(f"JSON written to {args.out}")
         else:
             pyperclip.copy(output)
             print(output)

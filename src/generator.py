@@ -3,6 +3,8 @@ File should only deal with generating data based on schema
 """
 
 import random
+import logging
+logger = logging.getLogger(__name__)
 from datetime import date, datetime
 
 DEFAULT_MAX_ARRAY_LENGTH = 10
@@ -91,7 +93,7 @@ def generate_value(prop, args, config, key_hint, faker, root_schema, key_path=No
             )
 
     except ValueError:
-        print(
+        logger.warning(
             f'Key "{key_hint}" matched with "none-{t}" method. Setting generic {t} value'
         )
         return generate_faker_value_default(faker, t)
@@ -171,10 +173,10 @@ def generate_faker_value(entry, faker, blank_mode, expected_type):
         if hasattr(faker, method_name):
             value = getattr(faker, method_name)(**args)
         else:
-            print(f"Unknown method '{method_name}', using fallback.")
+            logger.warning(f"Unknown method '{method_name}', using fallback.")
             value = faker.word()
     except Exception as e:
-        print(f"Error generating value for '{method_name}': {e}")
+        logger.error(f"Error generating value for '{method_name}': {e}")
         value = ""
 
     if isinstance(value, (date, datetime)):
