@@ -157,8 +157,7 @@ pylint .\src .\__main__.py
 
 ## TODO
 
-* ntegrate a JSON Schema Resolver: Use a library like jsonschema to handle $ref resolution comprehensively, including external references.
-* Improve error handling: By catch user errors in the config file and by verifing the schema clear error messages can be given to the user.
+* Integrate a JSON Schema Resolver: Use a library like jsonschema to handle $ref resolution comprehensively, including external references.
 * Implement Additional Schema Keywords: Extend the code to support oneOf, anyOf, allOf, and not, enabling the handling of more complex schemas.
 * Support Array Constraints: Modify the array generation logic to respect minItems and maxItems constraints specified in the schema.
 * Enhance Configuration Options: Allow users to define patterns, and other constraints directly in the configuration file to customize data generation further.

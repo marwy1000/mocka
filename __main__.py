@@ -59,7 +59,7 @@ def main():
                 logger.info("Generated the config file app.config")
                 save_custom_json(app_config, "app.config")
             else:
-                logger.error(f"Config file missing: {config_path}")
+                logger.error("Config file not found: %s", config_path)
                 sys.exit(1)
 
         schema = load_schema(args.schema)
