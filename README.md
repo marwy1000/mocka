@@ -39,7 +39,7 @@ Verify it and try it out. From the cloned directory:
 
 ```powershell
 python .\__main__.py --help
-python .\__main__.py .\\path_to_schema.json
+python .\__main__.py dist\path_to_schema.json
 ```
 
 ### Build an exe
@@ -55,7 +55,7 @@ Then verify it and try it out:
 ```powershell
 cd dist
 .\mockr.exe --version
-.\mockr.exe .\\path_to_schema.json
+.\mockr.exe schemaExample.json
 ```
 
 ## Help
@@ -120,7 +120,7 @@ providers: A list of [Faker](https://pypi.org/project/Faker) providers to includ
   ]
 ```
 
-max_array_length: The maximum items in generated arrays. Default is 10.
+max_array_length: The maximum items in generated arrays. Default is 10. The lowest value takes priority if maxItems is defined.
 
 ```json
   "max_array_length": 10
@@ -157,8 +157,7 @@ pylint .\src .\__main__.py
 
 ## TODO
 
+* Enable Keyword Support: like if/then/else/const for improved schema handling.
+* Extend the Overwrite Function: to select randomly from an enum, so that fixed values can randomly be chosen.
 * Integrate a JSON Schema Resolver: Use a library like jsonschema to handle $ref resolution comprehensively, including external references.
-* Implement Additional Schema Keywords: Extend the code to support oneOf, anyOf, allOf, and not, enabling the handling of more complex schemas.
-* Support Array Constraints: Modify the array generation logic to respect minItems and maxItems constraints specified in the schema.
-* Enhance Configuration Options: Allow users to define patterns, and other constraints directly in the configuration file to customize data generation further.
 * Code Comments and Documentation: Enhance inline comments and provide comprehensive documentation to assist future contributors and users in understanding the codebase.

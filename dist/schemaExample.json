@@ -1,0 +1,111 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "User Preferences",
+  "type": "object",
+  "properties": {
+    "userId": {
+      "type": "string"
+    },
+    "contact": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "email": { "type": "string", "format": "email" }
+          },
+          "required": ["email"]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "phone": {
+              "type": "string",
+              "pattern": "^\\+([1-9]|[1-9][0-9]|1[0-4][0-9]|150)-\\d{3} \\d{2} \\d{2}$"
+            }
+          },
+          "required": ["phone"]
+        }
+      ]
+    },
+    "notifications": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "emailNotifications": { "type": "boolean" }
+          },
+          "required": ["emailNotifications"]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "smsNotifications": { "type": "boolean" }
+          },
+          "required": ["smsNotifications"]
+        }
+      ]
+    },
+    "profile": {
+      "allOf": [
+        {
+          "type": "object",
+          "properties": {
+            "firstName": { "type": "string" },
+            "lastName": { "type": "string" }
+          },
+          "required": ["firstName", "lastName"]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "age": { "type": "integer", "minimum": 18, "maximum": 25 }
+          },
+          "required": ["age"]
+        }
+      ]
+    },
+    "favoriteColors": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1,
+      "maxItems": 3
+    },
+    "optionalPart": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "title": "name" },
+        "vara": { "enum": ["active", "inactive", "pending"], "title": "status" },
+        "profile": {
+          "type": "object",
+          "properties": {
+            "age": { "type": "string", "title": "age" },
+            "email": { "type": "string", "format": "email", "title": "email" }
+          }
+        },
+        "personnummer": { "type": "string", "title": "personnummer" },
+        "status":  { "type": "string" },
+        "age": { "type": "integer", "title": "age" },
+        "birthday": { "type": "string", "title": "birthday" },
+        "firstname": { "type": "string" },
+        "språk": { "type": "string" },
+        "color": { "type": "string" },
+        "role": { "type": "string" },
+        "currency": { "type": "string" },
+        "street": { "type": "string" },
+        "parentkey": {
+          "type": "object",
+          "properties": {
+            "businessrole": {
+              "type": "object",
+              "properties": {
+                "name": { "type": "string" }
+              }
+            },
+            "NAme": { "type": "string" }
+          }
+        }
+      }
+    }
+  },
+  "required": ["userId", "contact", "profile"]
+}

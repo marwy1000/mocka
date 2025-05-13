@@ -1,5 +1,7 @@
 __pycache__
 build
-dist/
+dist/*.py
+dist/*.exe
+dist/*.config
 mockr.spec
 app.config
