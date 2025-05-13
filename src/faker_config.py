@@ -4,6 +4,8 @@ Functions for initiating and configuring Faker
 
 import importlib
 import random
+import logging
+logger = logging.getLogger(__name__)
 from faker import Faker
 
 
@@ -41,7 +43,7 @@ def configure_faker(config: dict = None, args_seed=None):
                 module = importlib.import_module(module_path)
                 faker.add_provider(module.Provider)
             except (ImportError, AttributeError, ModuleNotFoundError):
-                print(f"Warning: Faker provider '{provider}' not found. Skipping.")
+                logger.warning(f"Warning: Faker provider '{provider}' not found. Skipping.")
 
     return faker
 
