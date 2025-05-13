@@ -39,13 +39,28 @@ def generate_value(prop, args, config, key_hint, faker, root_schema, key_path=No
     blank_mode = args.blank
     infer = args.infer
 
-    # No field_overrides anymore, handled through keyword_matching with "override"
-
     if "$ref" in prop:
         return resolve_ref_value(prop, args, config, key_hint, faker, root_schema)
 
     if "enum" in prop:
         return handle_enum(prop, blank_mode)
+
+    # Handle oneOf, anyOf, allOf
+    if "oneOf" in prop:
+        selected = random.choice(prop["oneOf"])
+        return generate_value(selected, args, config, key_hint, faker, root_schema, key_path)
+
+    if "anyOf" in prop:
+        selected = random.choice(prop["anyOf"])
+        return generate_value(selected, args, config, key_hint, faker, root_schema, key_path)
+
+    if "allOf" in prop:
+        result = {}
+        for subschema in prop["allOf"]:
+            part = generate_value(subschema, args, config, key_hint, faker, root_schema, key_path)
+            if isinstance(part, dict):
+                result.update(part)
+        return result
 
     t = prop.get("type")
     fmt = prop.get("format")
@@ -61,6 +76,13 @@ def generate_value(prop, args, config, key_hint, faker, root_schema, key_path=No
 
     try:
         if t == "string":
+            pattern = prop.get("pattern")
+            if pattern and not blank_mode:
+                try:
+                    import rstr
+                    return rstr.xeger(pattern)
+                except Exception as e:
+                    logger.warning(f"Failed to generate string matching pattern {pattern}: {e}")
             if fmt == "uri":
                 return "" if blank_mode else faker.uri()
             return generate_faker_value_from_key(
@@ -68,29 +90,30 @@ def generate_value(prop, args, config, key_hint, faker, root_schema, key_path=No
             )
 
         if t == "integer":
-            val = generate_faker_value_from_key(
-                infer_text, key_hint, blank_mode, faker, config, t, infer, key_path
-            )
-            return 0 if blank_mode else int(val)
+            minimum = prop.get("minimum", 0)
+            maximum = prop.get("maximum", 10000)
+            return 0 if blank_mode else faker.random_int(min=minimum, max=maximum)
 
         if t == "number":
-            val = generate_faker_value_from_key(
-                infer_text, key_hint, blank_mode, faker, config, t, infer, key_path
-            )
-            return 0.0 if blank_mode else float(val)
+            minimum = prop.get("minimum", 0.0)
+            maximum = prop.get("maximum", 10000.0)
+            return 0.0 if blank_mode else faker.pyfloat(min_value=minimum, max_value=maximum)
 
         if t == "boolean":
             return False if blank_mode else faker.boolean()
 
         if t == "array":
-            return generate_array_value(
-                prop, args, config, key_hint, faker, root_schema
-            )
+            min_items = prop.get("minItems", 0 if blank_mode else 1)
+            max_items = prop.get("maxItems", config.get("max_array_length", DEFAULT_MAX_ARRAY_LENGTH))
+            array_length = 0 if blank_mode else random.randint(min_items, max_items)
+            items = prop.get("items", {})
+            return [
+                generate_value(items, args, config, key_hint, faker, root_schema, key_path)
+                for _ in range(array_length)
+            ]
 
         if t == "object":
-            return generate_from_schema(
-                prop, config, args, faker, root_schema, key_path
-            )
+            return generate_from_schema(prop, config, args, faker, root_schema, key_path)
 
     except ValueError:
         logger.warning(
