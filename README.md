@@ -1,8 +1,8 @@
-<!-- Keywords: json schema, mockr, data generator, data faker, fake data, mock data, test data, synthetic data, offline, generator -->
+<!-- Keywords: json schema, mocka, data generator, data faker, fake data, mock data, test data, synthetic data, offline, generator -->
 
-# Mockr
+# Mocka
 
-This Python CLI tool generates JSON data based on a provided JSON Schema. The input is taken from a scheme file path or your clipboard. Output is copied to your clipboard, the console and can be saved to a file. You can optionally supply a file with predefined values for specific fields if you want to define what type of data it defines.
+Mocka is a Python CLI tool that generates JSON data based on a JSON Schema. The input is taken from a scheme file path or your clipboard. Output is copied to your clipboard, the console and can be saved to a file. Mocka detects what kind of data it should generate for each field and can be further extended by you.
 
 ## LICENSE and COPYRIGHT
 
@@ -39,7 +39,7 @@ Verify it and try it out. From the cloned directory:
 
 ```powershell
 python .\__main__.py --help
-python .\__main__.py dist\path_to_schema.json
+python .\__main__.py dist\schemaExample.json
 ```
 
 ### Build an exe
@@ -54,22 +54,22 @@ Then verify it and try it out:
 
 ```powershell
 cd dist
-.\mockr.exe --version
-.\mockr.exe schemaExample.json
+.\mocka.exe --version
+.\mocka.exe schemaExample.json
 ```
 
 ## Help
 
 ```powershell
-.\mockr.exe --help
+.\mocka.exe --help
 ```
 
 ```powershell
-usage: .\mockr.exe [-h] [--version] [--debug] [--out OUT] [--config CONFIG] [--seed SEED]
+usage: .\mocka.exe [-h] [--version] [--debug] [--out OUT] [--config CONFIG] [--seed SEED]
                    [--include-optional | --no-optional] [--infer] [--blank]
                    [schema]
 
-Generate fake JSON from schema.
+Generate JSON from schema.
 
 positional arguments:
   schema                Path to schema file (defaults to clipboard)
@@ -80,7 +80,7 @@ options:
   --debug, -d           Print debug info
   --out OUT, -o OUT     Output file (optional), instead of console and clipboard.
   --config CONFIG, -c CONFIG
-                        Mockr config file (will create and use the default if no input given).
+                        Mocka config file (will create and use the default if no input given).
   --seed SEED, -s SEED  Random seed (optional), overrides config. 0 is random
   --include-optional, -io
                         Include optional fields (default)

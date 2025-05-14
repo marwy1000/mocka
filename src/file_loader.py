@@ -6,6 +6,7 @@ import os
 import sys
 import json
 import logging
+
 logger = logging.getLogger(__name__)
 import tkinter as tk
 import pyperclip
@@ -25,16 +26,27 @@ def load_schema(source=None):
         except json.JSONDecodeError as e:
             logger.error(
                 "Invalid JSON format in schema file %s: %s (line %d, column %d)",
-                source, e.msg, e.lineno, e.colno
+                source,
+                e.msg,
+                e.lineno,
+                e.colno,
             )
         except PermissionError:
             logger.error("Permission denied when accessing schema file: %s", source)
         except OSError as e:
-            logger.error("OS error while accessing schema file %s: %s: %s",
-                         source, type(e).__name__, str(e))
+            logger.error(
+                "OS error while accessing schema file %s: %s: %s",
+                source,
+                type(e).__name__,
+                str(e),
+            )
         except Exception as e:
-            logger.error("Unexpected error reading schema file %s: %s: %s",
-                         source, type(e).__name__, str(e))
+            logger.error(
+                "Unexpected error reading schema file %s: %s: %s",
+                source,
+                type(e).__name__,
+                str(e),
+            )
         sys.exit(1)
 
     else:
@@ -44,12 +56,17 @@ def load_schema(source=None):
         except json.JSONDecodeError as e:
             logger.error(
                 "Clipboard contains invalid JSON: %s (line %d, column %d)",
-                e.msg, e.lineno, e.colno
+                e.msg,
+                e.lineno,
+                e.colno,
             )
             sys.exit(1)
         except Exception as e:
-            logger.error("Unexpected error reading schema from clipboard: %s: %s",
-                         type(e).__name__, str(e))
+            logger.error(
+                "Unexpected error reading schema from clipboard: %s: %s",
+                type(e).__name__,
+                str(e),
+            )
             sys.exit(1)
 
         if not isinstance(parsed_schema, dict):
@@ -98,5 +115,5 @@ def get_clipboard_fallback():
             r.withdraw()
             return r.clipboard_get()
         except Exception as e:
-            logger.error(f"Failed to access clipboard: {e}")
+            logger.error("Failed to access clipboard: %s", e)
             sys.exit(1)

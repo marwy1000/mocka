@@ -1,5 +1,5 @@
 """
-Provides command-line argument parsing for the mockr tool.
+Provides command-line argument parsing for the Mocka tool.
 """
 
 import argparse
@@ -7,9 +7,9 @@ import argparse
 
 def parse_args():
     """
-    Parse command-line arguments for the mockr JSON generation tool.
+    Parse command-line arguments for the Mocka JSON generation tool.
     """
-    parser = argparse.ArgumentParser(description="Generate fake JSON from schema.")
+    parser = argparse.ArgumentParser(description="Generate JSON from schema.")
     parser.add_argument(
         "schema", nargs="?", help="Path to schema file (defaults to clipboard)"
     )
@@ -21,7 +21,7 @@ def parse_args():
         "--config",
         "-c",
         default="app.config",
-        help="Mockr config file (will create and use the default if no input given).",
+        help="Mocka config file (will create and use the default if no input given).",
     )
     parser.add_argument(
         "--out", "-o", help="Output file (optional), instead of console and clipboard."

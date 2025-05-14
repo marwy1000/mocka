@@ -5,12 +5,14 @@ Functions for initiating and configuring Faker
 import importlib
 import random
 import logging
+
 logger = logging.getLogger(__name__)
 from faker import Faker
 
 
 def configure_faker(config: dict = None, args_seed=None):
     """Configure and return a Faker instance based on the given config."""
+    logger.debug("Running function configure_faker")
     config = config or {}
 
     # Handle locale
@@ -43,9 +45,12 @@ def configure_faker(config: dict = None, args_seed=None):
                 module = importlib.import_module(module_path)
                 faker.add_provider(module.Provider)
             except (ImportError, AttributeError, ModuleNotFoundError):
-                logger.warning(f"Warning: Faker provider '{provider}' not found. Skipping.")
+                logger.warning(
+                    "Warning: Faker provider '%s' not found. Skipping.", provider
+                )
 
     return faker
+
 
 app_config = {
   "locale": ["sv_SE"],

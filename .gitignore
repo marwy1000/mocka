@@ -3,5 +3,5 @@ build
 dist/*.py
 dist/*.exe
 dist/*.config
-mockr.spec
+mocka.spec
 app.config
