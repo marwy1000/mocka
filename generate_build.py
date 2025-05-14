@@ -2,7 +2,7 @@ import subprocess
 import sys
 
 def build():
-    print("🔨 Building mockr executable...")
+    print("🔨 Building Mocka executable...")
 
     cmd = [
         "pyinstaller",
@@ -12,7 +12,7 @@ def build():
         "--disable-windowed-traceback",
         "--noupx",
         "--optimize", "2",
-        "--name", "mockr",
+        "--name", "mocka",
         "./__main__.py"
     ]
 

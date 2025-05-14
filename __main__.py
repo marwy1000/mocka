@@ -1,4 +1,4 @@
-# Mockr - Generate test data based on a JSON schema
+# Mocka - Generate test data based on a JSON schema
 # Copyright (c) - Salih Serdenak
 # License: MIT
 """
@@ -11,18 +11,20 @@ import json
 from pathlib import Path
 import pyperclip
 import logging
+
 logger = logging.getLogger(__name__)
 from src.cli import parse_args
-from src.generator import generate_from_schema
+from src.generator import generate_from_schema, set_config, set_faker
 from src.file_loader import load_schema, load_config
 from src.faker_config import configure_faker, app_config
+
 
 def setup_logging(debug: bool = False):
     level = logging.DEBUG if debug else logging.INFO
     logging.basicConfig(
-        level=level,
-        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+        level=level, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
     )
+
 
 def save_custom_json(data: dict, filepath: str):
     with open(filepath, "w", encoding="utf-8") as f:
@@ -55,7 +57,7 @@ def main():
 
         config_path = Path(args.config)
         if not config_path.exists():
-            if (args.config == "app.config"):
+            if args.config == "app.config":
                 logger.info("Generated the config file app.config")
                 save_custom_json(app_config, "app.config")
             else:
@@ -65,11 +67,11 @@ def main():
         schema = load_schema(args.schema)
         config = load_config(args.config)
         faker = configure_faker(config, args.seed)
+        set_config(config)
+        set_faker(faker)
         result = generate_from_schema(
             schema,
-            config,
             args,
-            faker,
             root_schema=schema,
         )
 
@@ -77,7 +79,7 @@ def main():
 
         if args.out:
             Path(args.out).write_text(output, encoding="utf-8")
-            logger.info(f"JSON written to {args.out}")
+            logger.info("JSON written to %s", args.out)
         else:
             pyperclip.copy(output)
             print(output)
