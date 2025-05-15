@@ -2,21 +2,13 @@
 
 # Mocka
 
-Mocka is a Python CLI tool that generates JSON data based on a JSON Schema. The input is taken from a scheme file path or your clipboard. Output is copied to your clipboard, the console and can be saved to a file. Mocka detects what kind of data it should generate for each field and can be further extended by you.
+Mocka is a Python CLI tool that generates JSON data based on a JSON Schema. The input is taken as an CLI option or your clipboard. Output is copied to your clipboard, the console and can be saved to a file. Mocka detects what kind of data it should generate and how for each field and can be further extended by you.
 
 ## LICENSE and COPYRIGHT
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 Copyright (C) 2025 Salih Serdenak
-
-## Features
-
-- Generate data based on a JSON Schema
-- Define how data is generated
-- Override specific values with a fixed value
-- Take input from the clipboard or a file
-- Output to console, clipboard or file
 
 ## Requirements
 
@@ -38,7 +30,6 @@ pip install -r requirements.txt
 Verify it and try it out. From the cloned directory:
 
 ```powershell
-python .\__main__.py --help
 python .\__main__.py dist\schemaExample.json
 ```
 
@@ -47,7 +38,7 @@ python .\__main__.py dist\schemaExample.json
 From the cloned directory:
 
 ```powershell
-python generate_build.py
+python create_build.py
 ```
 
 Then verify it and try it out:
@@ -91,7 +82,7 @@ options:
 
 ## Config File Example
 
-Just run the script or exe once, pointing to a schema to generate the config file.
+Just run the script or exe once, pointing to a schema to generate the config file. It will be named app.config by default.
 
 ### Config File Options:
 
@@ -128,10 +119,13 @@ max_array_length: The maximum items in generated arrays. Default is 10. The lowe
 
 keyword_matching: This is an array that contains objects describing what keys to match to what faker methods and with what arguments. The matching is done from top to bottom.
 
-The object inside of the array contains a key called keywords. It is an array that can be one or more strings that checks if the keys in the schema contains one of the words, allowing for partial matching, without case sensitivity.
+An example of an object can be seen below. It contains keywords that are checked against keys in the schema to see if the key contains the one of the keywords, allowing for partial matching, without case sensitivity.
 
 ```json
-  { "keywords": ["age", "years", "maturity", "duration"], "method": "random_int", "args": { "min": 0, "max": 100 }},
+  { "keywords": ["age", "years", "maturity", "duration"], 
+    "method": "random_int",
+    "args": { "min": 0, "max": 100 }
+  },
 ```
 
 In addition to the built in faker methods you can also use the method override where you provide which static value you want to override with.
@@ -154,10 +148,3 @@ Be sure to run and fix issues found by these commands before checking in code:
 black .\src .\__main__.py
 pylint .\src .\__main__.py  
 ```
-
-## TODO
-
-* Enable Keyword Support: like if/then/else/const for improved schema handling.
-* Extend the Overwrite Function: to select randomly from an enum, so that fixed values can randomly be chosen.
-* Integrate a JSON Schema Resolver: Use a library like jsonschema to handle $ref resolution comprehensively, including external references.
-* Code Comments and Documentation: Enhance inline comments and provide comprehensive documentation to assist future contributors and users in understanding the codebase.

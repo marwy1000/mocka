@@ -8,15 +8,15 @@ __version__ = "0.0.5"
 
 import sys
 import json
+import logging
 from pathlib import Path
 import pyperclip
-import logging
-
-logger = logging.getLogger(__name__)
 from src.cli import parse_args
-from src.generator import generate_from_schema, set_config, set_faker
+from src.generator import generate_from_schema, configure_generator
 from src.file_loader import load_schema, load_config
 from src.faker_config import configure_faker, app_config
+
+logger = logging.getLogger(__name__)
 
 
 def setup_logging(debug: bool = False):
@@ -67,8 +67,7 @@ def main():
         schema = load_schema(args.schema)
         config = load_config(args.config)
         faker = configure_faker(config, args.seed)
-        set_config(config)
-        set_faker(faker)
+        configure_generator(config, faker)
         result = generate_from_schema(
             schema,
             args,

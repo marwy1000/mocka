@@ -5,9 +5,9 @@ Functions for initiating and configuring Faker
 import importlib
 import random
 import logging
+from faker import Faker
 
 logger = logging.getLogger(__name__)
-from faker import Faker
 
 
 def configure_faker(config: dict = None, args_seed=None):
@@ -52,6 +52,7 @@ def configure_faker(config: dict = None, args_seed=None):
     return faker
 
 
+# fmt: off
 app_config = {
   "locale": ["sv_SE"],
   "seed": 0,
@@ -91,3 +92,4 @@ app_config = {
       { "keywords": ["color", "colour", "färg"], "method": "color" }
     ]
 }
+# fmt: on

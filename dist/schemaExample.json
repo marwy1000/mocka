@@ -3,65 +3,24 @@
   "title": "User Preferences",
   "type": "object",
   "properties": {
-    "userId": {
-      "type": "string"
-    },
+    "userId": { "type": "string" },
     "contact": {
       "oneOf": [
-        {
-          "type": "object",
-          "properties": {
-            "email": { "type": "string", "format": "email" }
-          },
-          "required": ["email"]
-        },
-        {
-          "type": "object",
-          "properties": {
-            "phone": {
-              "type": "string",
-              "pattern": "^\\+([1-9]|[1-9][0-9]|1[0-4][0-9]|150)-\\d{3} \\d{2} \\d{2}$"
-            }
-          },
-          "required": ["phone"]
-        }
+        { "$ref": "#/definitions/emailContact" },
+        { "$ref": "#/definitions/phoneContact" }
       ]
     },
     "notifications": {
       "anyOf": [
-        {
-          "type": "object",
-          "properties": {
-            "emailNotifications": { "type": "boolean" }
-          },
-          "required": ["emailNotifications"]
-        },
-        {
-          "type": "object",
-          "properties": {
-            "smsNotifications": { "type": "boolean" }
-          },
-          "required": ["smsNotifications"]
-        }
+        { "$ref": "#/definitions/emailNotifications" },
+        { "$ref": "#/definitions/smsNotifications" }
       ]
     },
     "profile": {
       "allOf": [
-        {
-          "type": "object",
-          "properties": {
-            "firstName": { "type": "string" },
-            "lastName": { "type": "string" }
-          },
-          "required": ["firstName", "lastName"]
-        },
-        {
-          "type": "object",
-          "properties": {
-            "age": { "type": "integer", "minimum": 18, "maximum": 25 }
-          },
-          "required": ["age"]
-        }
+        { "$ref": "#/definitions/name" },
+        { "$ref": "#/definitions/ageRange" },
+        { "$ref": "#/definitions/address" }
       ]
     },
     "favoriteColors": {
@@ -71,21 +30,82 @@
       "maxItems": 3
     },
     "optionalPart": {
+      "$ref": "#/definitions/optionalPart"
+    }
+  },
+  "required": ["userId", "contact", "profile"],
+  "definitions": {
+    "emailContact": {
       "type": "object",
       "properties": {
-        "name": { "type": "string", "title": "name" },
-        "vara": { "enum": ["active", "inactive", "pending"], "title": "status" },
+        "email": { "type": "string", "format": "email" }
+      },
+      "required": ["email"]
+    },
+    "phoneContact": {
+      "type": "object",
+      "properties": {
+        "phone": {
+          "type": "string",
+          "pattern": "^\\+([1-9]|[1-9][0-9]|1[0-4][0-9]|150)-\\d{3} \\d{2} \\d{2}$"
+        }
+      },
+      "required": ["phone"]
+    },
+    "emailNotifications": {
+      "type": "object",
+      "properties": {
+        "emailNotifications": { "type": "boolean" }
+      },
+      "required": ["emailNotifications"]
+    },
+    "smsNotifications": {
+      "type": "object",
+      "properties": {
+        "smsNotifications": { "type": "boolean" }
+      },
+      "required": ["smsNotifications"]
+    },
+    "name": {
+      "type": "object",
+      "properties": {
+        "firstName": { "type": "string" },
+        "lastName": { "type": "string" }
+      },
+      "required": ["firstName", "lastName"]
+    },
+    "ageRange": {
+      "type": "object",
+      "properties": {
+        "age": { "type": "integer", "minimum": 18, "maximum": 25 }
+      },
+      "required": ["age"]
+    },
+    "address": {
+      "type": "object",
+      "properties": {
+        "street": { "type": "string" },
+        "city": { "type": "string" },
+        "country": { "type": "string" }
+      }
+    },
+    "optionalPart": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "vara": { "enum": ["active", "inactive", "pending"] },
         "profile": {
           "type": "object",
           "properties": {
-            "age": { "type": "string", "title": "age" },
-            "email": { "type": "string", "format": "email", "title": "email" }
+            "age": { "type": "string" },
+            "email": { "type": "string", "format": "email" },
+            "address": { "$ref": "#/definitions/address" }
           }
         },
-        "personnummer": { "type": "string", "title": "personnummer" },
-        "status":  { "type": "string" },
-        "age": { "type": "integer", "title": "age" },
-        "birthday": { "type": "string", "title": "birthday" },
+        "personnummer": { "type": "string" },
+        "status": { "type": "string" },
+        "age": { "type": "integer" },
+        "birthday": { "type": "string" },
         "firstname": { "type": "string" },
         "språk": { "type": "string" },
         "color": { "type": "string" },
@@ -98,7 +118,14 @@
             "businessrole": {
               "type": "object",
               "properties": {
-                "name": { "type": "string" }
+                "name": { "type": "string" },
+                "details": {
+                  "type": "object",
+                  "properties": {
+                    "level": { "type": "integer" },
+                    "assignedAt": { "type": "string", "format": "date-time" }
+                  }
+                }
               }
             },
             "NAme": { "type": "string" }
@@ -106,6 +133,5 @@
         }
       }
     }
-  },
-  "required": ["userId", "contact", "profile"]
+  }
 }

@@ -6,11 +6,11 @@ import os
 import sys
 import json
 import logging
-
-logger = logging.getLogger(__name__)
 import tkinter as tk
 import pyperclip
 from .generator import resolve_all_refs
+
+logger = logging.getLogger(__name__)
 
 
 def load_schema(source=None):

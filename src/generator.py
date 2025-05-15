@@ -4,14 +4,12 @@ File should only deal with generating data based on schema
 
 import random
 import logging
+from datetime import date, datetime
+import rstr
 
 logger = logging.getLogger(__name__)
-from datetime import date, datetime
 
 DEFAULT_MAX_ARRAY_LENGTH = 10
-
-faker = None
-config = None
 
 
 def generate_from_schema(
@@ -20,7 +18,6 @@ def generate_from_schema(
     root_schema=None,
     key_path=None,
 ):
-    logger.debug("Running function generate_from_schema")
     result = {}
     properties = schema.get("properties", {})
     for key, prop in properties.items():
@@ -37,7 +34,6 @@ def generate_from_schema(
 
 
 def generate_value(prop, args, key_hint, root_schema, key_path=None):
-    logger.debug("Running function generate_value")
     blank_mode = args.blank
     infer = args.infer
 
@@ -81,8 +77,6 @@ def generate_value(prop, args, key_hint, root_schema, key_path=None):
             pattern = prop.get("pattern")
             if pattern and not blank_mode:
                 try:
-                    import rstr
-
                     return rstr.xeger(pattern)
                 except Exception as e:
                     logger.warning(
@@ -128,7 +122,10 @@ def generate_value(prop, args, key_hint, root_schema, key_path=None):
 
     except ValueError:
         logger.warning(
-            'Key "%s" matched with "none-%s" method. Setting generic %s value', key_hint, t, t
+            'Key "%s" matched with "none-%s" method. Setting generic %s value',
+            key_hint,
+            t,
+            t,
         )
         return generate_faker_value_default(t)
 
@@ -172,7 +169,7 @@ def generate_faker_value_from_key(
         for kw in entry.get("keywords", []):
             if isinstance(kw, str) and kw.lower() in key_hint:
                 return True
-            elif isinstance(kw, dict) and match_nested_dict(kw, key_path or []):
+            if isinstance(kw, dict) and match_nested_dict(kw, key_path or []):
                 return True
         return False
 
@@ -249,7 +246,9 @@ def resolve_ref(root_schema, ref_path):
     sub_schema = root_schema
     for part in parts:
         if not isinstance(sub_schema, dict):
-            raise ValueError("Cannot resolve part '%s' in $ref path '%s'", part, ref_path)
+            raise ValueError(
+                "Cannot resolve part '%s' in $ref path '%s'", part, ref_path
+            )
         sub_schema = sub_schema.get(part)
         if sub_schema is None:
             raise ValueError("Could not resolve $ref path: %s", ref_path)
@@ -302,17 +301,14 @@ def resolve_all_refs(schema, root_schema=None):
             resolved = resolve_ref(root_schema, schema["$ref"])
             return resolve_all_refs(resolved, root_schema)
         return {k: resolve_all_refs(v, root_schema) for k, v in schema.items()}
-    elif isinstance(schema, list):
+    if isinstance(schema, list):
         return [resolve_all_refs(item, root_schema) for item in schema]
 
     return schema
 
 
-def set_config(c):
+def configure_generator(c, f):
     global config
-    config = c
-
-
-def set_faker(f):
     global faker
+    config = c
     faker = f
