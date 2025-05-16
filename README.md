@@ -134,7 +134,7 @@ In addition to the built in faker methods you can also use the method override w
   { "keywords": ["age"], "method": "override", "args": { "value": 1 }},
 ```
 
-It is also possible to make the matching more fine grained by matching the parent keys. This is done by providing a JSON object instead of a string, where the value is the final key that is being looke for. This matching doesn't allow for partial matches, and is also case insensitive.
+It is also possible to make the matching more fine grained by matching the parent keys. This is done by providing a JSON object instead of a string, where the value is the final key that is being looked for. This matching doesn't allow for partial matches, and is also case insensitive.
 
 ```json
   {"keywords": [{"parent": {"child": "age"}}], "method": "override", "args": {"value": 1}},
