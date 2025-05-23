@@ -57,7 +57,7 @@ cd dist
 
 ```powershell
 usage: .\mocka.exe [-h] [--version] [--debug] [--out OUT] [--config CONFIG] [--seed SEED]
-                   [--include-optional | --no-optional] [--infer] [--blank]
+                   [--include-optional | --no-optional] [--keymatch] [--blank]
                    [schema]
 
 Generate JSON from schema.
@@ -76,7 +76,7 @@ options:
   --include-optional, -io
                         Include optional fields (default)
   --no-optional, -no    Don't include optional fields
-  --infer, -i           Infer type from description and title if provided
+  --keymatch, -k        Match keywords towards the key only, instead of key, description and title
   --blank, -b           Generate blank values (empty strings, 0s, false, first enum, etc.)
 ```
 

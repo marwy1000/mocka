@@ -128,7 +128,22 @@
                 }
               }
             },
-            "NAme": { "type": "string" }
+            "NAme": { "type": "string" },
+            "SomeArray": {
+              "type": "array",
+              "items":[{
+                "type": "object",
+                "properties": {
+                  "ID":{
+                    "type":"integer"
+                  }
+                },
+                "required":[
+                  "ID"
+                ]
+              }]
+            },
+            "Keymatch": { "type": "string", "title": "email",  "description": "email"}
           }
         }
       }

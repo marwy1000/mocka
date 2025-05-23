@@ -82,7 +82,6 @@ app_config = {
       { "keywords": ["url", "uri", "website", "web"], "method": "uri" },
       { "keywords": ["description", "descr", "summary", "text", "comment", "content", "additionalinfo", "info"], "method": "sentence", "args": { "nb_words": 12 } },
       { "keywords": ["number", "nummer"], "method": "random_int", "args": { "min": 0, "max": 10000 } },
-      { "keywords": ["vat", "vatcode", "vatnumber", "moms", "momsnummer"],"method": "company_vat"},
       { "keywords": ["company", "nameco", "firm", "organization"], "method": "company" },
       { "keywords": ["username", "user", "login"], "method": "user_name" },
       { "keywords": ["ipv4", "ipv6"], "method": "ipv4" },

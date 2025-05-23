@@ -49,10 +49,10 @@ def parse_args():
     )
     parser.set_defaults(include_optional=True)
     parser.add_argument(
-        "--infer",
-        "-i",
+        "--keymatch",
+        "-k",
         action="store_false",
-        help="Infer type from description and title if provided",
+        help="Match keywords towards the key only, instead of key, description and title",
     )
     parser.add_argument(
         "--blank",

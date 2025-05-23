@@ -34,8 +34,9 @@ def generate_from_schema(
 
 
 def generate_value(prop, args, key_hint, root_schema, key_path=None):
+    logger.debug("Running function generate_value")
     blank_mode = args.blank
-    infer = args.infer
+    keymatch = args.keymatch
 
     if "$ref" in prop:
         return resolve_ref_value(prop, args, key_hint, root_schema)
@@ -64,12 +65,11 @@ def generate_value(prop, args, key_hint, root_schema, key_path=None):
     fmt = prop.get("format")
     desc = prop.get("description", "")
     title = prop.get("title", "")
-
     infer_text = f"{desc} {title} {key_hint}".strip()
 
-    if not t and infer:
+    if not t and keymatch:
         return generate_faker_value_from_key(
-            infer_text, key_hint, blank_mode, t, infer, key_path=key_path
+            infer_text, key_hint, blank_mode, t, keymatch, key_path=key_path
         )
 
     try:
@@ -85,7 +85,7 @@ def generate_value(prop, args, key_hint, root_schema, key_path=None):
             if fmt == "uri":
                 return "" if blank_mode else faker.uri()
             return generate_faker_value_from_key(
-                infer_text, key_hint, blank_mode, t, infer, key_path
+                infer_text, key_hint, blank_mode, t, keymatch, key_path
             )
 
         if t == "integer":
@@ -112,6 +112,11 @@ def generate_value(prop, args, key_hint, root_schema, key_path=None):
             )
             array_length = 0 if blank_mode else random.randint(min_items, max_items)
             items = prop.get("items", {})
+
+            # FIX: support array-style items (tuple validation)
+            if isinstance(items, list):
+                items = items[0] if items else {}
+
             return [
                 generate_value(items, args, key_hint, root_schema, key_path)
                 for _ in range(array_length)
@@ -137,7 +142,7 @@ def generate_faker_value_from_key(
     key_hint,
     blank_mode,
     expected_type,
-    infer,
+    keymatch,
     key_path=None,
 ):
     keyword_faker_map = config.get("keyword_matching", [])
@@ -177,7 +182,7 @@ def generate_faker_value_from_key(
         if match_entry(entry):
             return generate_faker_value(entry, blank_mode, expected_type)
 
-    if infer:
+    if keymatch:
         for entry in keyword_faker_map:
             if any(
                 isinstance(kw, str) and kw.lower() in text
