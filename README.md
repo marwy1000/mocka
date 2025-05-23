@@ -146,5 +146,6 @@ Be sure to run and fix issues found by these commands before checking in code:
 
 ```powershell
 black .\src .\__main__.py
-pylint .\src .\__main__.py  
+pylint .\src .\__main__.py
+python release.py 0.0.6 "First public showing"  
 ```
