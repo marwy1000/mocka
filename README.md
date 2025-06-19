@@ -145,9 +145,15 @@ It is also possible to make the matching more fine grained by matching the paren
 ## Version 0.0.7
 
 * New build options with much improved speed
-  * Option 1 - uses onedir, which is superfast, but has an underlying folder
+  * Option 1 - uses onedir, which is superfast, but has an underlying folder and the built file ends up in dist\mocka
 * Updated packages and python requirement
 * Renamed \_\_main\_\_ file to mocka.py
+* Added support for strings with date-time, date, time and duration formatting
+* Arrays support for arrays with additionalItems, minItems, maxItems, uniqueItems and extended support for items
+* Added support for numbers with minimum, maximum, exclusiveMinimum, exclusiveMaximum, multipleOf
+* 
+
+adsf
 
 # Development
 
