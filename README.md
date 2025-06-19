@@ -151,9 +151,7 @@ It is also possible to make the matching more fine grained by matching the paren
 * Added support for strings with date-time, date, time and duration formatting
 * Arrays support for arrays with additionalItems, minItems, maxItems, uniqueItems and extended support for items
 * Added support for numbers with minimum, maximum, exclusiveMinimum, exclusiveMaximum, multipleOf
-* 
 
-adsf
 
 # Development
 
