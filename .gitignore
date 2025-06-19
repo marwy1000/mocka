@@ -3,5 +3,7 @@ build
 dist/*.py
 dist/*.exe
 dist/*.config
+dist/mocka
+!schemaExample.json
 mocka.spec
 app.config

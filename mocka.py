@@ -4,7 +4,7 @@
 """
 This main file initiates the cli, reads files and then calls the function to generate the output
 """
-__version__ = "0.0.6"
+__version__ = "0.0.7"
 
 import sys
 import json

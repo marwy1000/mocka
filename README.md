@@ -12,7 +12,7 @@ Copyright (C) 2025 Salih Serdenak
 
 ## Requirements
 
-- Python 3.8 or higher
+- Python 3.12.9 or higher
 
 ## Installation
 
@@ -30,7 +30,7 @@ pip install -r requirements.txt
 Verify it and try it out. From the cloned directory:
 
 ```powershell
-python .\__main__.py dist\schemaExample.json
+python .\mocka.py dist\schemaExample.json
 ```
 
 ### Build an exe
@@ -140,12 +140,21 @@ It is also possible to make the matching more fine grained by matching the paren
   {"keywords": [{"parent": {"child": "age"}}], "method": "override", "args": {"value": 1}},
 ```
 
+# Release Notes
+
+## Version 0.0.7
+
+* New build options with much improved speed
+  * Option 1 - uses onedir, which is superfast, but has an underlying folder
+* Updated packages and python requirement
+* Renamed \_\_main\_\_ file to mocka.py
+
 # Development
 
 Be sure to run and fix issues found by these commands before checking in code:
 
 ```powershell
-black .\src .\__main__.py
-pylint .\src .\__main__.py
-python release.py 0.0.6 "First public showing"  
+black .\src .\mocka.py
+pylint .\src .\mocka.py
+python release.py <version> "Some comment"  
 ```
