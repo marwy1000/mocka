@@ -4,8 +4,10 @@ File should only deal with generating data based on schema
 
 import random
 import logging
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 import rstr
+import math
+import isodate
 
 logger = logging.getLogger(__name__)
 
@@ -74,53 +76,20 @@ def generate_value(prop, args, key_hint, root_schema, key_path=None):
 
     try:
         if t == "string":
-            pattern = prop.get("pattern")
-            if pattern and not blank_mode:
-                try:
-                    return rstr.xeger(pattern)
-                except Exception as e:
-                    logger.warning(
-                        "Failed to generate string matching pattern %s: %s", pattern, e
-                    )
-            if fmt == "uri":
-                return "" if blank_mode else faker.uri()
-            return generate_faker_value_from_key(
-                infer_text, key_hint, blank_mode, t, keymatch, key_path
-            )
-
-        if t == "integer":
-            minimum = prop.get("minimum", 0)
-            maximum = prop.get("maximum", 10000)
-            return 0 if blank_mode else faker.random_int(min=minimum, max=maximum)
-
-        if t == "number":
-            minimum = prop.get("minimum", 0.0)
-            maximum = prop.get("maximum", 10000.0)
-            return (
-                0.0
-                if blank_mode
-                else faker.pyfloat(min_value=minimum, max_value=maximum)
-            )
+            return generate_string_value(prop, args, key_hint, root_schema)
+        
+        if t == "array":
+            return generate_array_value(prop, args, key_hint, root_schema)
+        
+        if t in ("integer", "number"):
+            return generate_number_value(prop, args)
 
         if t == "boolean":
             return False if blank_mode else faker.boolean()
 
         if t == "array":
-            min_items = prop.get("minItems", 0 if blank_mode else 1)
-            max_items = prop.get(
-                "maxItems", config.get("max_array_length", DEFAULT_MAX_ARRAY_LENGTH)
-            )
-            array_length = 0 if blank_mode else random.randint(min_items, max_items)
-            items = prop.get("items", {})
+            return generate_array_value(prop, args, key_hint, root_schema)
 
-            # FIX: support array-style items (tuple validation)
-            if isinstance(items, list):
-                items = items[0] if items else {}
-
-            return [
-                generate_value(items, args, key_hint, root_schema, key_path)
-                for _ in range(array_length)
-            ]
 
         if t == "object":
             return generate_from_schema(prop, args, root_schema, key_path)
@@ -243,6 +212,98 @@ def generate_faker_value_default(expected_type):
     return faker.word()
 
 
+
+def generate_number_value(prop, args):
+    blank_mode = args.blank
+
+    if blank_mode:
+        return 0 if prop.get("type") == "integer" else 0.0
+
+    minimum = prop.get("minimum")
+    maximum = prop.get("maximum")
+    exclusive_min = prop.get("exclusiveMinimum")
+    exclusive_max = prop.get("exclusiveMaximum")
+    multiple_of = prop.get("multipleOf")
+
+    # Effective min/max calculation with exclusive bounds handled by nextafter
+    if exclusive_min is not None:
+        min_val = math.nextafter(exclusive_min, float('inf'))
+    elif minimum is not None:
+        min_val = minimum
+    else:
+        min_val = 0
+
+    if exclusive_max is not None:
+        max_val = math.nextafter(exclusive_max, float('-inf'))
+    elif maximum is not None:
+        max_val = maximum
+    else:
+        max_val = min_val + 10000
+
+    # Safety check: if no valid range, swap to avoid issues
+    if min_val > max_val:
+        min_val, max_val = max_val, min_val
+
+    if multiple_of:
+        start = math.ceil(min_val / multiple_of)
+        end = math.floor(max_val / multiple_of)
+        if start > end:
+            # fallback: pick nearest multiple_of to min_val
+            val = multiple_of * start
+        else:
+            val = random.randint(start, end) * multiple_of
+    else:
+        val = random.uniform(min_val, max_val)
+
+    if prop.get("type") == "integer":
+        val = int(math.floor(val))
+
+    return val
+
+
+def generate_string_value(prop, args, key_hint, root_schema):
+    blank_mode = args.blank
+    fmt = prop.get("format")
+
+    if blank_mode:
+        return ""
+
+    if fmt == "date-time":
+        return faker.date_time().isoformat()
+    if fmt == "date":
+        return faker.date()
+    if fmt == "time":
+        return faker.time()
+    if fmt == "duration":
+        # Generate a random timedelta and convert to ISO 8601 duration string
+        td = timedelta(
+            days=random.randint(0, 30),
+            hours=random.randint(0, 23),
+            minutes=random.randint(0, 59),
+            seconds=random.randint(0, 59),
+        )
+        return isodate.duration_isoformat(td)
+    if fmt == "uri":
+        return "" if blank_mode else faker.uri()
+
+    # Fallback to existing logic
+    # Try pattern if present
+    pattern = prop.get("pattern")
+    if pattern and not blank_mode:
+        try:
+            return rstr.xeger(pattern)
+        except Exception as e:
+            logger.warning(f"Pattern generation failed: {pattern} - {e}")
+
+    return generate_faker_value_from_key(
+        prop.get("description", "") + " " + prop.get("title", ""),
+        key_hint,
+        blank_mode,
+        "string",
+        args.keymatch,
+    )
+
+
 def resolve_ref(root_schema, ref_path):
     if not ref_path.startswith("#/"):
         raise ValueError("Unsupported $ref format: %s", ref_path)
@@ -282,19 +343,53 @@ def get_blank_value(t):
 
 
 def generate_array_value(prop, args, key_hint, root_schema):
+    min_items = prop.get("minItems", 0 if args.blank else 1)
+    max_items = prop.get(
+        "maxItems", config.get("max_array_length", DEFAULT_MAX_ARRAY_LENGTH)
+    )
+    if max_items < min_items:
+        max_items = min_items
+    array_length = 0 if args.blank else random.randint(min_items, max_items)
+
     items = prop.get("items", {})
-    max_array_length = config.get("max_array_length", DEFAULT_MAX_ARRAY_LENGTH)
-    array_length = 0 if args.blank else random.randint(1, max_array_length)
+    additional_items = prop.get("additionalItems", True)
+    unique_items = prop.get("uniqueItems", False)
 
     results = []
+
     if isinstance(items, list):
-        for item_schema in items:
-            results.append(generate_value(item_schema, args, key_hint, root_schema))
+        # Tuple validation: fixed schemas per index
+        for idx, item_schema in enumerate(items):
+            if idx < array_length:
+                results.append(generate_value(item_schema, args, key_hint, root_schema))
+        # Additional items if allowed
+        if additional_items and array_length > len(items):
+            extra_schema = additional_items if isinstance(additional_items, dict) else {}
+            for _ in range(array_length - len(items)):
+                results.append(generate_value(extra_schema, args, key_hint, root_schema))
     else:
+        # Single schema for all items
         for _ in range(array_length):
             results.append(generate_value(items, args, key_hint, root_schema))
-    return results
 
+    if unique_items:
+        seen = set()
+        unique_results = []
+        for v in results:
+            k = repr(v)
+            if k not in seen:
+                seen.add(k)
+                unique_results.append(v)
+        # Fill up to min_items with unique items if needed
+        while len(unique_results) < min_items:
+            candidate = generate_value(items, args, key_hint, root_schema)
+            k = repr(candidate)
+            if k not in seen:
+                unique_results.append(candidate)
+                seen.add(k)
+        results = unique_results
+
+    return results
 
 # used when loading the schema
 def resolve_all_refs(schema, root_schema=None):
