@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Format Test",
+  "type": "object",
+  "properties": {
+    "formattest": {
+      "type": "object",
+      "properties": {
+        "created": { "type": "string", "format": "date-time" },
+        "da_te": { "type": "string", "format": "date" },
+        "ti_me": { "type": "string", "format": "time" },
+        "duration": { "type": "string", "format": "duration" },
+        "ip_v4": { "type": "string", "format": "ipv4" },
+        "ip_v6": { "type": "string", "format": "ipv6" },
+        "em_ail": { "type": "string", "format": "email" },
+        "idnEm_ail": { "type": "string", "format": "idn-email" },
+        "hostname": { "type": "string", "format": "hostname" },
+        "idnHostname": { "type": "string", "format": "idn-hostname" }
+      }
+    }
+  }
+}

@@ -5,8 +5,8 @@ File should only deal with generating data based on schema
 import random
 import logging
 from datetime import date, datetime, timedelta
-import rstr
 import math
+import rstr
 import isodate
 
 logger = logging.getLogger(__name__)
@@ -64,7 +64,6 @@ def generate_value(prop, args, key_hint, root_schema, key_path=None):
         return result
 
     t = prop.get("type")
-    fmt = prop.get("format")
     desc = prop.get("description", "")
     title = prop.get("title", "")
     infer_text = f"{desc} {title} {key_hint}".strip()
@@ -76,11 +75,11 @@ def generate_value(prop, args, key_hint, root_schema, key_path=None):
 
     try:
         if t == "string":
-            return generate_string_value(prop, args, key_hint, root_schema)
-        
+            return generate_string_value(prop, args, key_hint)
+
         if t == "array":
             return generate_array_value(prop, args, key_hint, root_schema)
-        
+
         if t in ("integer", "number"):
             return generate_number_value(prop, args)
 
@@ -89,7 +88,6 @@ def generate_value(prop, args, key_hint, root_schema, key_path=None):
 
         if t == "array":
             return generate_array_value(prop, args, key_hint, root_schema)
-
 
         if t == "object":
             return generate_from_schema(prop, args, root_schema, key_path)
@@ -212,7 +210,6 @@ def generate_faker_value_default(expected_type):
     return faker.word()
 
 
-
 def generate_number_value(prop, args):
     blank_mode = args.blank
 
@@ -227,14 +224,14 @@ def generate_number_value(prop, args):
 
     # Effective min/max calculation with exclusive bounds handled by nextafter
     if exclusive_min is not None:
-        min_val = math.nextafter(exclusive_min, float('inf'))
+        min_val = math.nextafter(exclusive_min, float("inf"))
     elif minimum is not None:
         min_val = minimum
     else:
         min_val = 0
 
     if exclusive_max is not None:
-        max_val = math.nextafter(exclusive_max, float('-inf'))
+        max_val = math.nextafter(exclusive_max, float("-inf"))
     elif maximum is not None:
         max_val = maximum
     else:
@@ -261,7 +258,7 @@ def generate_number_value(prop, args):
     return val
 
 
-def generate_string_value(prop, args, key_hint, root_schema):
+def generate_string_value(prop, args, key_hint):
     blank_mode = args.blank
     fmt = prop.get("format")
 
@@ -275,7 +272,6 @@ def generate_string_value(prop, args, key_hint, root_schema):
     if fmt == "time":
         return faker.time()
     if fmt == "duration":
-        # Generate a random timedelta and convert to ISO 8601 duration string
         td = timedelta(
             days=random.randint(0, 30),
             hours=random.randint(0, 23),
@@ -284,10 +280,20 @@ def generate_string_value(prop, args, key_hint, root_schema):
         )
         return isodate.duration_isoformat(td)
     if fmt == "uri":
-        return "" if blank_mode else faker.uri()
+        return faker.uri()
+    if fmt == "ipv4":
+        return faker.ipv4()
+    if fmt == "ipv6":
+        return faker.ipv6()
+    if fmt == "email":
+        return faker.email()
+    if fmt == "idn-email":
+        return faker.email()  # or custom IDN generation
+    if fmt == "hostname":
+        return faker.hostname()
+    if fmt == "idn-hostname":
+        return faker.hostname()  # or custom IDN generation
 
-    # Fallback to existing logic
-    # Try pattern if present
     pattern = prop.get("pattern")
     if pattern and not blank_mode:
         try:
@@ -347,8 +353,7 @@ def generate_array_value(prop, args, key_hint, root_schema):
     max_items = prop.get(
         "maxItems", config.get("max_array_length", DEFAULT_MAX_ARRAY_LENGTH)
     )
-    if max_items < min_items:
-        max_items = min_items
+    max_items = max(max_items, min_items)
     array_length = 0 if args.blank else random.randint(min_items, max_items)
 
     items = prop.get("items", {})
@@ -364,9 +369,13 @@ def generate_array_value(prop, args, key_hint, root_schema):
                 results.append(generate_value(item_schema, args, key_hint, root_schema))
         # Additional items if allowed
         if additional_items and array_length > len(items):
-            extra_schema = additional_items if isinstance(additional_items, dict) else {}
+            extra_schema = (
+                additional_items if isinstance(additional_items, dict) else {}
+            )
             for _ in range(array_length - len(items)):
-                results.append(generate_value(extra_schema, args, key_hint, root_schema))
+                results.append(
+                    generate_value(extra_schema, args, key_hint, root_schema)
+                )
     else:
         # Single schema for all items
         for _ in range(array_length):
@@ -390,6 +399,7 @@ def generate_array_value(prop, args, key_hint, root_schema):
         results = unique_results
 
     return results
+
 
 # used when loading the schema
 def resolve_all_refs(schema, root_schema=None):

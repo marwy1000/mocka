@@ -29,52 +29,32 @@
       "minItems": 1,
       "maxItems": 3
     },
-    "optionalPart": {
-      "$ref": "#/definitions/optionalPart"
-    },
-    "tags": {
-      "type": "array",
-      "items": { "type": "string" },
-      "minItems": 2,
-      "maxItems": 5,
-      "uniqueItems": true
-    },
-    "values": {
-      "type": "array",
-      "items": [
-        { "type": "string" },
-        { "type": "number" }
-      ],
-      "additionalItems": { "type": "boolean" },
-      "minItems": 3
-    },
-    "score": {
-      "type": "number",
-      "minimum": 10,
-      "maximum": 20,
-      "multipleOf": 2
-    },
-    "rating": {
-      "type": "number",
-      "exclusiveMinimum": 0,
-      "exclusiveMaximum": 5
-    },
-    "createdAt": {
-      "type": "string",
-      "format": "date-time"
-    },
-    "bir_thDa_te": {
-      "type": "string",
-      "format": "date"
-    },
-    "wakeUpTime": {
-      "type": "string",
-      "format": "time"
-    },
-    "membershipDuration": {
-      "type": "string",
-      "format": "duration"
-    }
+    "optionalPart": { "$ref": "#/definitions/optionalPart" },
+    "exclusiveInt": {
+        "type": "integer",
+        "exclusiveMinimum": 100
+        },
+        "smallMultipleFloat": {
+        "type": "number",
+        "multipleOf": 0.01
+        },
+        "zeroLengthArray": {
+        "type": "array",
+        "items": { "type": "string" },
+        "minItems": 0,
+        "maxItems": 0
+        },
+        "uniqueObjectArray": {
+        "type": "array",
+        "items": {
+            "type": "object",
+            "properties": {
+            "label": { "type": "string" }
+            }
+        },
+        "uniqueItems": true,
+        "minItems": 2
+        }
   },
   "required": ["userId", "contact", "profile"],
   "definitions": {
@@ -174,19 +154,17 @@
             "NAme": { "type": "string" },
             "SomeArray": {
               "type": "array",
-              "items":[{
-                "type": "object",
-                "properties": {
-                  "ID":{
-                    "type":"integer"
-                  }
-                },
-                "required":[
-                  "ID"
-                ]
-              }]
+              "items": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "ID": { "type": "integer" }
+                  },
+                  "required": ["ID"]
+                }
+              ]
             },
-            "Keymatch": { "type": "string", "title": "email",  "description": "email" }
+            "Keymatch": { "type": "string", "title": "email", "description": "email" }
           }
         }
       }

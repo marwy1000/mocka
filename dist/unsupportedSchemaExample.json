@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Format Test",
+  "type": "object",
+  "properties": {
+    "formattest": {
+      "type": "object",
+      "properties": {
+        "uuid": { "type": "string", "format": "uuid" },
+        "ur_iReference": { "type": "string", "format": "uri-reference" },
+        "iri": { "type": "string", "format": "iri" },
+        "iriReference": { "type": "string", "format": "iri-reference" },
+        "jsonPointer": { "type": "string", "format": "json-pointer" },
+        "relativeJsonPointer": { "type": "string", "format": "relative-json-pointer" },
+        "regex": { "type": "string", "format": "regex" }
+      }
+    }
+  }
+}

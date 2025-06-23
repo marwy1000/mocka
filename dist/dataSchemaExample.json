@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Faker Test",
+  "type": "object",
+  "properties": {
+    "somelist": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 2,
+      "maxItems": 5,
+      "uniqueItems": true
+    },
+    "otherlist": {
+      "type": "array",
+      "items": [
+        { "type": "string" },
+        { "type": "number" }
+      ],
+      "additionalItems": { "type": "boolean" },
+      "minItems": 3,
+      "maxItems": 5
+    },
+    "score": {
+      "type": "number",
+      "minimum": 10,
+      "maximum": 20,
+      "multipleOf": 2
+    },
+    "rating": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "exclusiveMaximum": 5
+    }
+  }
+}

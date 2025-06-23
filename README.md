@@ -30,7 +30,7 @@ pip install -r requirements.txt
 Verify it and try it out. From the cloned directory:
 
 ```powershell
-python .\mocka.py dist\schemaExample.json
+python .\mocka.py dist\generalSchemaExample.json
 ```
 
 ### Build an exe
@@ -38,15 +38,17 @@ python .\mocka.py dist\schemaExample.json
 From the cloned directory:
 
 ```powershell
-python create_build.py
+python create_build.py 1
 ```
+
+If you don't give 1 as an input, you will get an menu with different options, where by the exefile can end up in a different directory.
 
 Then verify it and try it out:
 
 ```powershell
-cd dist
+cd dist\mocka
 .\mocka.exe --version
-.\mocka.exe schemaExample.json
+.\mocka.exe ..\generalSchemaExample.json
 ```
 
 ## Help
@@ -148,10 +150,15 @@ It is also possible to make the matching more fine grained by matching the paren
   * Option 1 - uses onedir, which is superfast, but has an underlying folder and the built file ends up in dist\mocka
 * Updated packages and python requirement
 * Renamed \_\_main\_\_ file to mocka.py
-* Added support for strings with date-time, date, time and duration formatting
+* Added support for strings with formatting of date-time, date, time, duration, uri, ipv4, ipv6, email, idn-email, hostname, idn-hostname 
 * Arrays support for arrays with additionalItems, minItems, maxItems, uniqueItems and extended support for items
 * Added support for numbers with minimum, maximum, exclusiveMinimum, exclusiveMaximum, multipleOf
+* Split the testschemas to several files
 
+# TODO
+* Decide if formatting should have precedence over the app.config
+* Add more formatting support
+* Add more CLI options to override the app.config
 
 # Development
 
