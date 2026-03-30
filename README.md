@@ -165,7 +165,7 @@ It is also possible to make the matching more fine grained by matching the paren
 Be sure to run and fix issues found by these commands before checking in code:
 
 ```powershell
-black .\src .\mocka.py
+black .\src .\mocka.py -l 100
 pylint .\src .\mocka.py
 python release.py <version> "Some comment"  
 ```

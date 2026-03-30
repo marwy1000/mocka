@@ -1,5 +1,5 @@
 """
-Module for loading and verifying loaded files
+Utilities for loading and validating schema/config inputs.
 """
 
 import os
@@ -13,107 +13,122 @@ from .generator import resolve_all_refs
 logger = logging.getLogger(__name__)
 
 
-def load_schema(source=None):
+def load_schema(schema_source: str = None):
     logger.debug("Running function load_schema")
 
-    if source:
+    if schema_source:
         try:
-            with open(source, "r", encoding="utf-8") as f:
-                parsed_schema = json.load(f)
-                return resolve_all_refs(parsed_schema)
+            with open(schema_source, "r", encoding="utf-8") as file:
+                schema_dict = json.load(file)
+                return resolve_all_refs(schema_dict)
+
         except FileNotFoundError:
-            logger.error("Schema file not found: %s", source)
-        except json.JSONDecodeError as e:
+            logger.error("Schema file not found: %s", schema_source)
+
+        except json.JSONDecodeError as err:
             logger.error(
-                "Invalid JSON format in schema file %s: %s (line %d, column %d)",
-                source,
-                e.msg,
-                e.lineno,
-                e.colno,
+                "Invalid JSON in schema file %s: %s (line %d, column %d)",
+                schema_source,
+                err.msg,
+                err.lineno,
+                err.colno,
             )
+
         except PermissionError:
-            logger.error("Permission denied when accessing schema file: %s", source)
-        except OSError as e:
+            logger.error("Permission denied for schema file: %s", schema_source)
+
+        except OSError as err:
             logger.error(
-                "OS error while accessing schema file %s: %s: %s",
-                source,
-                type(e).__name__,
-                str(e),
+                "OS error accessing schema file %s: %s: %s",
+                schema_source,
+                type(err).__name__,
+                str(err),
             )
-        except Exception as e:
+
+        except Exception as err:
             logger.error(
                 "Unexpected error reading schema file %s: %s: %s",
-                source,
-                type(e).__name__,
-                str(e),
+                schema_source,
+                type(err).__name__,
+                str(err),
             )
+
         sys.exit(1)
 
-    else:
+    # Fallback: read schema from clipboard
+    try:
+        clipboard_content = read_clipboard()
+        schema_dict = json.loads(clipboard_content)
+
+    except json.JSONDecodeError as err:
+        logger.error(
+            "Clipboard JSON invalid: %s (line %d, column %d)",
+            err.msg,
+            err.lineno,
+            err.colno,
+        )
+        sys.exit(1)
+
+    except Exception as err:
+        logger.error(
+            "Error reading schema from clipboard: %s: %s",
+            type(err).__name__,
+            str(err),
+        )
+        sys.exit(1)
+
+    if not isinstance(schema_dict, dict):
+        logger.error("Clipboard JSON must be an object (dict).")
+        sys.exit(1)
+
+    return resolve_all_refs(schema_dict)
+
+
+def load_config(config_file_path: str):
+    config_dict = {}
+
+    if config_file_path:
+        if not os.path.isfile(config_file_path):
+            logger.error("Config file not found: %s", config_file_path)
+            sys.exit(1)
+
         try:
-            clipboard = get_clipboard_fallback()
-            parsed_schema = json.loads(clipboard)
-        except json.JSONDecodeError as e:
-            logger.error(
-                "Clipboard contains invalid JSON: %s (line %d, column %d)",
-                e.msg,
-                e.lineno,
-                e.colno,
-            )
-            sys.exit(1)
-        except Exception as e:
-            logger.error(
-                "Unexpected error reading schema from clipboard: %s: %s",
-                type(e).__name__,
-                str(e),
-            )
-            sys.exit(1)
+            with open(config_file_path, "r", encoding="utf-8") as file:
+                config_dict = json.load(file)
 
-        if not isinstance(parsed_schema, dict):
-            logger.error("Clipboard JSON is not an object.")
-            sys.exit(1)
-
-        return resolve_all_refs(parsed_schema)
-
-
-def load_config(config_path):
-    config = {}
-    if config_path:
-        if not os.path.isfile(config_path):
-            logger.error("Config file not found: %s", config_path)
-            sys.exit(1)
-        try:
-            with open(config_path, "r", encoding="utf-8") as f:
-                config = json.load(f)
-        except json.JSONDecodeError as e:
+        except json.JSONDecodeError as err:
             logger.error(
                 "Invalid JSON in config file %s: %s (line %d, column %d)",
-                config_path,
-                e.msg,
-                e.lineno,
-                e.colno,
+                config_file_path,
+                err.msg,
+                err.lineno,
+                err.colno,
             )
             sys.exit(1)
-        except Exception as e:
+
+        except Exception as err:
             logger.error(
-                "Unexpected error reading config file %s: %s: %s",
-                config_path,
-                type(e).__name__,
-                str(e),
+                "Error reading config file %s: %s: %s",
+                config_file_path,
+                type(err).__name__,
+                str(err),
             )
             sys.exit(1)
-    return config
+
+    return config_dict
 
 
-def get_clipboard_fallback():
+def read_clipboard():
+    """Retrieve clipboard text with fallback strategies"""
     try:
         pyperclip.set_clipboard("windows")  # Force Windows clipboard backend
         return pyperclip.paste()
+
     except Exception:
         try:
-            r = tk.Tk()
-            r.withdraw()
-            return r.clipboard_get()
-        except Exception as e:
-            logger.error("Failed to access clipboard: %s", e)
+            tk_root = tk.Tk()
+            tk_root.withdraw()
+            return tk_root.clipboard_get()
+        except Exception as err:
+            logger.error("Unable to access clipboard: %s", err)
             sys.exit(1)

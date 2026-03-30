@@ -10,12 +10,8 @@ def parse_args():
     Parse command-line arguments for the Mocka JSON generation tool.
     """
     parser = argparse.ArgumentParser(description="Generate JSON from schema.")
-    parser.add_argument(
-        "schema", nargs="?", help="Path to schema file (defaults to clipboard)"
-    )
-    parser.add_argument(
-        "--version", "-v", action="store_true", help="Show version and exit"
-    )
+    parser.add_argument("schema", nargs="?", help="Path to schema file (defaults to clipboard)")
+    parser.add_argument("--version", "-v", action="store_true", help="Show version and exit")
     parser.add_argument("--debug", "-d", action="store_true", help="Print debug info")
     parser.add_argument(
         "--config",

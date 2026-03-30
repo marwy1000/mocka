@@ -1,5 +1,5 @@
 """
-File should only deal with generating data based on schema
+Functions for generating data based on a JSON schema
 """
 
 import random
@@ -14,150 +14,132 @@ logger = logging.getLogger(__name__)
 DEFAULT_MAX_ARRAY_LENGTH = 10
 
 
-def generate_from_schema(
-    schema,
-    args,
-    root_schema=None,
-    key_path=None,
-):
+def generate_from_schema(schema, args, root_schema=None, path=None):
     result = {}
     properties = schema.get("properties", {})
-    for key, prop in properties.items():
-        if key not in schema.get("required", []) and not args.include_optional:
+
+    for property_name, property_schema in properties.items():
+        if property_name not in schema.get("required", []) and not args.include_optional:
             continue
-        result[key] = generate_value(
-            prop,
+
+        result[property_name] = generate_value(
+            property_schema,
             args,
-            key_hint=key,
+            field_name=property_name,
             root_schema=root_schema or schema,
-            key_path=(key_path or []) + [key],
+            path=(path or []) + [property_name],
         )
+
     return result
 
 
-def generate_value(prop, args, key_hint, root_schema, key_path=None):
-    logger.debug("Running function generate_value")
+def generate_value(schema, args, field_name, root_schema, path=None):
     blank_mode = args.blank
-    keymatch = args.keymatch
+    use_key_matching = args.keymatch
 
-    if "$ref" in prop:
-        return resolve_ref_value(prop, args, key_hint, root_schema)
+    if "$ref" in schema:
+        return resolve_ref_value(schema, args, field_name, root_schema)
 
-    if "enum" in prop:
-        return handle_enum(prop, blank_mode)
+    if "enum" in schema:
+        return handle_enum(schema, blank_mode)
 
-    # Handle oneOf, anyOf, allOf
-    if "oneOf" in prop:
-        selected = random.choice(prop["oneOf"])
-        return generate_value(selected, args, key_hint, root_schema, key_path)
+    if "oneOf" in schema:
+        return generate_value(random.choice(schema["oneOf"]), args, field_name, root_schema, path)
 
-    if "anyOf" in prop:
-        selected = random.choice(prop["anyOf"])
-        return generate_value(selected, args, key_hint, root_schema, key_path)
+    if "anyOf" in schema:
+        return generate_value(random.choice(schema["anyOf"]), args, field_name, root_schema, path)
 
-    if "allOf" in prop:
-        result = {}
-        for subschema in prop["allOf"]:
-            part = generate_value(subschema, args, key_hint, root_schema, key_path)
-            if isinstance(part, dict):
-                result.update(part)
-        return result
+    if "allOf" in schema:
+        merged_result = {}
+        for sub_schema in schema["allOf"]:
+            partial = generate_value(sub_schema, args, field_name, root_schema, path)
+            if isinstance(partial, dict):
+                merged_result.update(partial)
+        return merged_result
 
-    t = prop.get("type")
-    desc = prop.get("description", "")
-    title = prop.get("title", "")
-    infer_text = f"{desc} {title} {key_hint}".strip()
+    schema_type = schema.get("type")
+    description = schema.get("description", "")
+    title = schema.get("title", "")
+    inference_text = f"{description} {title} {field_name}".strip()
 
-    if not t and keymatch:
-        return generate_faker_value_from_key(
-            infer_text, key_hint, blank_mode, t, keymatch, key_path=key_path
+    if not schema_type and use_key_matching:
+        return generate_value_from_keywords(
+            inference_text, field_name, blank_mode, schema_type, use_key_matching, path
         )
 
     try:
-        if t == "string":
-            return generate_string_value(prop, args, key_hint)
+        if schema_type == "string":
+            return generate_string(schema, args, field_name)
 
-        if t == "array":
-            return generate_array_value(prop, args, key_hint, root_schema)
+        if schema_type == "array":
+            return generate_array(schema, args, field_name, root_schema)
 
-        if t in ("integer", "number"):
-            return generate_number_value(prop, args)
+        if schema_type in ("integer", "number"):
+            return generate_number(schema, args)
 
-        if t == "boolean":
+        if schema_type == "boolean":
             return False if blank_mode else faker.boolean()
 
-        if t == "array":
-            return generate_array_value(prop, args, key_hint, root_schema)
-
-        if t == "object":
-            return generate_from_schema(prop, args, root_schema, key_path)
+        if schema_type == "object":
+            return generate_from_schema(schema, args, root_schema, path)
 
     except ValueError:
         logger.warning(
-            'Key "%s" matched with "none-%s" method. Setting generic %s value',
-            key_hint,
-            t,
-            t,
+            'Field "%s" fell back to default generator for type "%s"',
+            field_name,
+            schema_type,
         )
-        return generate_faker_value_default(t)
+        return generate_default_value(schema_type)
 
     return None
 
 
-def generate_faker_value_from_key(
-    description,
-    key_hint,
-    blank_mode,
-    expected_type,
-    keymatch,
-    key_path=None,
+def generate_value_from_keywords(
+    text, field_name, blank_mode, expected_type, use_key_matching, path=None
 ):
-    keyword_faker_map = config.get("keyword_matching", [])
-    key_hint = (key_hint or "").lower()
-    text = f"{description} {key_hint}".lower()
+    keyword_map = config.get("keyword_matching", [])
+    field_name = (field_name or "").lower()
+    full_text = f"{text} {field_name}".lower()
 
-    def match_nested_dict(pattern_dict, path):
-        if not isinstance(pattern_dict, dict) or not path:
+    def matches_nested_pattern(pattern, path):
+        if not isinstance(pattern, dict) or not path:
             return False
 
-        for parent, child in pattern_dict.items():
+        for parent, child in pattern.items():
             parent = parent.lower()
+
             if isinstance(child, dict):
                 for i in range(len(path) - 1):
-                    if path[i].lower() == parent and match_nested_dict(
-                        child, path[i + 1 :]
-                    ):
+                    if path[i].lower() == parent and matches_nested_pattern(child, path[i + 1 :]):
                         return True
+
             elif isinstance(child, str):
                 for i in range(len(path) - 1):
-                    if (
-                        path[i].lower() == parent
-                        and path[i + 1].lower() == child.lower()
-                    ):
+                    if path[i].lower() == parent and path[i + 1].lower() == child.lower():
                         return True
+
         return False
 
-    def match_entry(entry):
-        for kw in entry.get("keywords", []):
-            if isinstance(kw, str) and kw.lower() in key_hint:
+    def matches_entry(entry):
+        for keyword in entry.get("keywords", []):
+            if isinstance(keyword, str) and keyword.lower() in field_name:
                 return True
-            if isinstance(kw, dict) and match_nested_dict(kw, key_path or []):
+            if isinstance(keyword, dict) and matches_nested_pattern(keyword, path or []):
                 return True
         return False
 
-    for entry in keyword_faker_map:
-        if match_entry(entry):
+    for entry in keyword_map:
+        if matches_entry(entry):
             return generate_faker_value(entry, blank_mode, expected_type)
 
-    if keymatch:
-        for entry in keyword_faker_map:
+    if use_key_matching:
+        for entry in keyword_map:
             if any(
-                isinstance(kw, str) and kw.lower() in text
-                for kw in entry.get("keywords", [])
+                isinstance(k, str) and k.lower() in full_text for k in entry.get("keywords", [])
             ):
                 return generate_faker_value(entry, blank_mode, expected_type)
 
-    return "" if blank_mode else generate_faker_value_default(expected_type)
+    return "" if blank_mode else generate_default_value(expected_type)
 
 
 def generate_faker_value(entry, blank_mode, expected_type):
@@ -165,40 +147,37 @@ def generate_faker_value(entry, blank_mode, expected_type):
         return ""
 
     method_name = entry["method"]
-    args = entry.get("args", {})
+    method_args = entry.get("args", {})
 
     if method_name == "override":
-        return args.get("value", "")
+        return method_args.get("value", "")
 
     try:
         if hasattr(faker, method_name):
-            value = getattr(faker, method_name)(**args)
+            value = getattr(faker, method_name)(**method_args)
         else:
-            logger.warning("Unknown method '%s', using fallback.", method_name)
+            logger.warning("Unknown faker method '%s', using fallback.", method_name)
             value = faker.word()
-    except Exception as e:
-        logger.error("Error generating value for '%s': %s", method_name, e)
+    except Exception as err:
+        logger.error("Faker error for '%s': %s", method_name, err)
         value = ""
 
     if isinstance(value, (date, datetime)):
         return value.isoformat()
+
     if expected_type == "string":
         return str(value)
+
     if expected_type == "integer":
-        try:
-            return int(value)
-        except (ValueError, TypeError):
-            return 0
+        return int(value) if isinstance(value, (int, float, str)) else 0
+
     if expected_type == "number":
-        try:
-            return float(value)
-        except (ValueError, TypeError):
-            return 0.0
+        return float(value) if isinstance(value, (int, float, str)) else 0.0
 
     return value
 
 
-def generate_faker_value_default(expected_type):
+def generate_default_value(expected_type):
     if expected_type == "string":
         return faker.word()
     if expected_type == "integer":
@@ -210,60 +189,56 @@ def generate_faker_value_default(expected_type):
     return faker.word()
 
 
-def generate_number_value(prop, args):
-    blank_mode = args.blank
+def generate_number(schema, args):
+    if args.blank:
+        return 0 if schema.get("type") == "integer" else 0.0
 
-    if blank_mode:
-        return 0 if prop.get("type") == "integer" else 0.0
+    minimum = schema.get("minimum")
+    maximum = schema.get("maximum")
+    exclusive_min = schema.get("exclusiveMinimum")
+    exclusive_max = schema.get("exclusiveMaximum")
+    multiple_of = schema.get("multipleOf")
 
-    minimum = prop.get("minimum")
-    maximum = prop.get("maximum")
-    exclusive_min = prop.get("exclusiveMinimum")
-    exclusive_max = prop.get("exclusiveMaximum")
-    multiple_of = prop.get("multipleOf")
-
-    # Effective min/max calculation with exclusive bounds handled by nextafter
+    # Use nextafter to respect exclusive bounds without skipping valid floats
     if exclusive_min is not None:
-        min_val = math.nextafter(exclusive_min, float("inf"))
+        min_value = math.nextafter(exclusive_min, float("inf"))
     elif minimum is not None:
-        min_val = minimum
+        min_value = minimum
     else:
-        min_val = 0
+        min_value = 0
 
     if exclusive_max is not None:
-        max_val = math.nextafter(exclusive_max, float("-inf"))
+        max_value = math.nextafter(exclusive_max, float("-inf"))
     elif maximum is not None:
-        max_val = maximum
+        max_value = maximum
     else:
-        max_val = min_val + 10000
+        max_value = min_value + 10000
 
-    # Safety check: if no valid range, swap to avoid issues
-    if min_val > max_val:
-        min_val, max_val = max_val, min_val
+    if min_value > max_value:
+        min_value, max_value = max_value, min_value
 
     if multiple_of:
-        start = math.ceil(min_val / multiple_of)
-        end = math.floor(max_val / multiple_of)
+        start = math.ceil(min_value / multiple_of)
+        end = math.floor(max_value / multiple_of)
+
         if start > end:
-            # fallback: pick nearest multiple_of to min_val
-            val = multiple_of * start
+            value = multiple_of * start
         else:
-            val = random.randint(start, end) * multiple_of
+            value = random.randint(start, end) * multiple_of
     else:
-        val = random.uniform(min_val, max_val)
+        value = random.uniform(min_value, max_value)
 
-    if prop.get("type") == "integer":
-        val = int(math.floor(val))
+    if schema.get("type") == "integer":
+        value = int(math.floor(value))
 
-    return val
+    return value
 
 
-def generate_string_value(prop, args, key_hint):
-    blank_mode = args.blank
-    fmt = prop.get("format")
-
-    if blank_mode:
+def generate_string(schema, args, field_name):
+    if args.blank:
         return ""
+
+    fmt = schema.get("format")
 
     if fmt == "date-time":
         return faker.date_time().isoformat()
@@ -272,13 +247,13 @@ def generate_string_value(prop, args, key_hint):
     if fmt == "time":
         return faker.time()
     if fmt == "duration":
-        td = timedelta(
+        duration = timedelta(
             days=random.randint(0, 30),
             hours=random.randint(0, 23),
             minutes=random.randint(0, 59),
             seconds=random.randint(0, 59),
         )
-        return isodate.duration_isoformat(td)
+        return isodate.duration_isoformat(duration)
     if fmt == "uri":
         return faker.uri()
     if fmt == "ipv4":
@@ -287,24 +262,22 @@ def generate_string_value(prop, args, key_hint):
         return faker.ipv6()
     if fmt == "email":
         return faker.email()
-    if fmt == "idn-email":
-        return faker.email()  # or custom IDN generation
+    if fmt in ("idn-email", "idn-hostname"):
+        return faker.email()
     if fmt == "hostname":
         return faker.hostname()
-    if fmt == "idn-hostname":
-        return faker.hostname()  # or custom IDN generation
 
-    pattern = prop.get("pattern")
-    if pattern and not blank_mode:
+    pattern = schema.get("pattern")
+    if pattern:
         try:
             return rstr.xeger(pattern)
-        except Exception as e:
-            logger.warning(f"Pattern generation failed: {pattern} - {e}")
+        except Exception as err:
+            logger.warning("Pattern generation failed: %s - %s", pattern, err)
 
-    return generate_faker_value_from_key(
-        prop.get("description", "") + " " + prop.get("title", ""),
-        key_hint,
-        blank_mode,
+    return generate_value_from_keywords(
+        f"{schema.get('description', '')} {schema.get('title', '')}",
+        field_name,
+        args.blank,
         "string",
         args.keymatch,
     )
@@ -312,113 +285,112 @@ def generate_string_value(prop, args, key_hint):
 
 def resolve_ref(root_schema, ref_path):
     if not ref_path.startswith("#/"):
-        raise ValueError("Unsupported $ref format: %s", ref_path)
+        raise ValueError("Unsupported $ref format")
 
-    parts = ref_path.lstrip("#/").split("/")
-    sub_schema = root_schema
-    for part in parts:
-        if not isinstance(sub_schema, dict):
-            raise ValueError(
-                "Cannot resolve part '%s' in $ref path '%s'", part, ref_path
-            )
-        sub_schema = sub_schema.get(part)
-        if sub_schema is None:
-            raise ValueError("Could not resolve $ref path: %s", ref_path)
-    return sub_schema
+    current_schema = root_schema
+    for part in ref_path.lstrip("#/").split("/"):
+        if not isinstance(current_schema, dict):
+            raise ValueError("Invalid $ref path")
+        current_schema = current_schema.get(part)
+        if current_schema is None:
+            raise ValueError("Unresolvable $ref path")
+
+    return current_schema
 
 
-def resolve_ref_value(prop, args, key_hint, root_schema):
+def resolve_ref_value(schema, args, field_name, root_schema):
     if root_schema is None:
-        raise ValueError("Missing root_schema when resolving $ref")
-    ref_schema = resolve_ref(root_schema, prop["$ref"])
-    if ref_schema.get("type") == "object":
-        return generate_from_schema(ref_schema, args, root_schema)
-    return generate_value(ref_schema, args, key_hint, root_schema)
+        raise ValueError("Missing root schema for $ref resolution")
+
+    resolved_schema = resolve_ref(root_schema, schema["$ref"])
+
+    if resolved_schema.get("type") == "object":
+        return generate_from_schema(resolved_schema, args, root_schema)
+
+    return generate_value(resolved_schema, args, field_name, root_schema)
 
 
-def handle_enum(prop, blank_mode):
-    if not prop["enum"]:
-        return get_blank_value(prop.get("type")) if blank_mode else None
-    return prop["enum"][0] if blank_mode else random.choice(prop["enum"])
+def handle_enum(schema, blank_mode):
+    if not schema["enum"]:
+        return get_blank_value(schema.get("type")) if blank_mode else None
+    return schema["enum"][0] if blank_mode else random.choice(schema["enum"])
 
 
-def get_blank_value(t):
+def get_blank_value(schema_type):
     return (
-        "" if t == "string" else 0.0 if t == "number" else 0 if t == "integer" else None
+        ""
+        if schema_type == "string"
+        else 0.0 if schema_type == "number" else 0 if schema_type == "integer" else None
     )
 
 
-def generate_array_value(prop, args, key_hint, root_schema):
-    min_items = prop.get("minItems", 0 if args.blank else 1)
-    max_items = prop.get(
-        "maxItems", config.get("max_array_length", DEFAULT_MAX_ARRAY_LENGTH)
-    )
+def generate_array(schema, args, field_name, root_schema):
+    min_items = schema.get("minItems", 0 if args.blank else 1)
+    max_items = schema.get("maxItems", config.get("max_array_length", DEFAULT_MAX_ARRAY_LENGTH))
     max_items = max(max_items, min_items)
-    array_length = 0 if args.blank else random.randint(min_items, max_items)
 
-    items = prop.get("items", {})
-    additional_items = prop.get("additionalItems", True)
-    unique_items = prop.get("uniqueItems", False)
+    length = 0 if args.blank else random.randint(min_items, max_items)
+
+    items_schema = schema.get("items", {})
+    additional_items = schema.get("additionalItems", True)
+    unique_items = schema.get("uniqueItems", False)
 
     results = []
 
-    if isinstance(items, list):
-        # Tuple validation: fixed schemas per index
-        for idx, item_schema in enumerate(items):
-            if idx < array_length:
-                results.append(generate_value(item_schema, args, key_hint, root_schema))
-        # Additional items if allowed
-        if additional_items and array_length > len(items):
-            extra_schema = (
-                additional_items if isinstance(additional_items, dict) else {}
-            )
-            for _ in range(array_length - len(items)):
-                results.append(
-                    generate_value(extra_schema, args, key_hint, root_schema)
-                )
+    if isinstance(items_schema, list):
+        # Tuple validation: each index has its own schema
+        for idx, item_schema in enumerate(items_schema):
+            if idx < length:
+                results.append(generate_value(item_schema, args, field_name, root_schema))
+
+        if additional_items and length > len(items_schema):
+            extra_schema = additional_items if isinstance(additional_items, dict) else {}
+            for _ in range(length - len(items_schema)):
+                results.append(generate_value(extra_schema, args, field_name, root_schema))
     else:
-        # Single schema for all items
-        for _ in range(array_length):
-            results.append(generate_value(items, args, key_hint, root_schema))
+        for _ in range(length):
+            results.append(generate_value(items_schema, args, field_name, root_schema))
 
     if unique_items:
         seen = set()
         unique_results = []
-        for v in results:
-            k = repr(v)
-            if k not in seen:
-                seen.add(k)
-                unique_results.append(v)
-        # Fill up to min_items with unique items if needed
+
+        for value in results:
+            key = repr(value)
+            if key not in seen:
+                seen.add(key)
+                unique_results.append(value)
+
+        # Ensure min_items is satisfied with unique values
         while len(unique_results) < min_items:
-            candidate = generate_value(items, args, key_hint, root_schema)
-            k = repr(candidate)
-            if k not in seen:
+            candidate = generate_value(items_schema, args, field_name, root_schema)
+            key = repr(candidate)
+            if key not in seen:
+                seen.add(key)
                 unique_results.append(candidate)
-                seen.add(k)
+
         results = unique_results
 
     return results
 
 
-# used when loading the schema
 def resolve_all_refs(schema, root_schema=None):
     if root_schema is None:
         root_schema = schema
 
     if isinstance(schema, dict):
         if "$ref" in schema:
-            resolved = resolve_ref(root_schema, schema["$ref"])
-            return resolve_all_refs(resolved, root_schema)
+            return resolve_all_refs(resolve_ref(root_schema, schema["$ref"]), root_schema)
         return {k: resolve_all_refs(v, root_schema) for k, v in schema.items()}
+
     if isinstance(schema, list):
         return [resolve_all_refs(item, root_schema) for item in schema]
 
     return schema
 
 
-def configure_generator(c, f):
+def configure_generator(configuration, faker_instance):
     global config
     global faker
-    config = c
-    faker = f
+    config = configuration
+    faker = faker_instance

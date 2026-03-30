@@ -10,46 +10,50 @@ from faker import Faker
 logger = logging.getLogger(__name__)
 
 
-def configure_faker(config: dict = None, args_seed=None):
-    """Configure and return a Faker instance based on the given config."""
+def configure_faker(config: dict = None, cli_seed: int = None):
+    """Create and configure a Faker instance using config and optional CLI seed."""
     logger.debug("Running function configure_faker")
+
     config = config or {}
 
-    # Handle locale
-    locale = config.get("locale")
-    if isinstance(locale, list):
-        # If locale is a list, randomly choose one from the list
-        locale = random.choice(locale)
-    elif isinstance(locale, str):
-        # If locale is a string, use it directly
-        pass
+    # Faker does not support multiple locales simultaneously in a single instance.
+    # If a list is provided, we pick one randomly to preserve variability.
+    locale_config = config.get("locale")
+
+    if isinstance(locale_config, list):
+        selected_locale = random.choice(locale_config)
+    elif isinstance(locale_config, str):
+        selected_locale = locale_config
     else:
-        # Default locale if none is provided
-        locale = "en_US"
+        # Fallback option set to US
+        selected_locale = "en_US"
 
-    # Create the Faker instance using the chosen locale
-    faker = Faker(locale)
+    faker_instance = Faker(selected_locale)
 
-    # Seed from CLI arg or config
-    seed = args_seed if args_seed is not None else config.get("seed")
-    if seed is None or seed == 0:
-        seed = random.randint(1, 999999)
-    faker.seed_instance(seed)
-    random.seed(seed)
+    # CLI seed takes precedence to allow reproducible runs from outside config.
+    resolved_seed = cli_seed if cli_seed is not None else config.get("seed")
 
-    # Add providers (only if NOT in multi-locale mode)
-    if not isinstance(locale, list):
-        for provider in config.get("providers", []):
+    # Treat 0 as "no seed" and randomize it.
+    if resolved_seed in (None, 0):
+        resolved_seed = random.randint(1, 999999)
+
+    # Seed both Faker and Python's random to keep all randomness aligned.
+    faker_instance.seed_instance(resolved_seed)
+    random.seed(resolved_seed)
+
+    # Register additional providers:
+    # Only applied when using a single locale, since multi-locale setups
+    # can lead to inconsistent provider availability.
+    if not isinstance(locale_config, list):
+        for provider_name in config.get("providers", []):
             try:
-                module_path = f"faker.providers.{provider}"
-                module = importlib.import_module(module_path)
-                faker.add_provider(module.Provider)
+                module_path = f"faker.providers.{provider_name}"
+                provider_module = importlib.import_module(module_path)
+                faker_instance.add_provider(provider_module.Provider)
             except (ImportError, AttributeError, ModuleNotFoundError):
-                logger.warning(
-                    "Warning: Faker provider '%s' not found. Skipping.", provider
-                )
+                logger.warning("Faker provider '%s' not found. Skipping.", provider_name)
 
-    return faker
+    return faker_instance
 
 
 # fmt: off
@@ -68,7 +72,8 @@ app_config = {
       { "keywords": ["languagecode"], "method": "language_code" },
       { "keywords": ["countrydialingcode"], "method": "country_calling_code"},
       { "keywords": ["countrycode", "landskod"], "method": "country_code" },
-      { "keywords": ["articlename", "artikelnamn", "productname", "produktnamn", "project", {"project": "name"}, {"application": "name"}], "method": "bs" },
+      { "keywords": ["articlename", "artikelnamn", "productname", "produktnamn", "project"], "method": "bs" },
+      { "keywords": [{"project": "name"}, {"application": "name"}], "method": "bs" },
       { "keywords": ["role", "job", {"businessrole": "name"}], "method": "job" },
       { "keywords": ["ssn", "socialsecurity", "personnummer"], "method": "ssn" },
       { "keywords": ["phone", "tel", "mobile"], "method": "phone_number" },
@@ -84,7 +89,8 @@ app_config = {
       { "keywords": ["number", "nummer"], "method": "random_int", "args": { "min": 0, "max": 10000 } },
       { "keywords": ["company", "nameco", "firm", "organization"], "method": "company" },
       { "keywords": ["username", "user", "login"], "method": "user_name" },
-      { "keywords": ["ipv4", "ipv6"], "method": "ipv4" },
+      { "keywords": ["ipv4"], "method": "ipv4" },
+      { "keywords": ["ipv6"], "method": "ipv6" },
       { "keywords": ["language", "språk"], "method": "language_name" },
       { "keywords": ["firstname", "förnamn"], "method": "first_name" },
       { "keywords": ["name", "fullname", "title", "namn"], "method": "name" },
