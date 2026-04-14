@@ -6,5 +6,6 @@ dist/*.config
 dist/*test*
 dist/mocka
 !schemaExample.json
+!dist/snapshot_test.py
 mocka.spec
 app.config
