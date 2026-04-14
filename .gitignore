@@ -3,6 +3,7 @@ build
 dist/*.py
 dist/*.exe
 dist/*.config
+dist/*test*
 dist/mocka
 !schemaExample.json
 mocka.spec

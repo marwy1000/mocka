@@ -1,5 +1,5 @@
 """
-Utilities for loading and validating schema/config inputs.
+Functions for loading and validating schema/config inputs.
 """
 
 import os
@@ -8,127 +8,90 @@ import json
 import logging
 import tkinter as tk
 import pyperclip
-from .generator import resolve_all_refs
 
 logger = logging.getLogger(__name__)
 
 
-def load_schema(schema_source: str = None):
-    logger.debug("Running function load_schema")
+class InputLoadError(Exception):
+    """Raised when schema/config input cannot be loaded or parsed."""
 
-    if schema_source:
-        try:
-            with open(schema_source, "r", encoding="utf-8") as file:
-                schema_dict = json.load(file)
-                return resolve_all_refs(schema_dict)
 
-        except FileNotFoundError:
-            logger.error("Schema file not found: %s", schema_source)
+def load_schema(schema_source: str | None = None) -> dict:
+    logger.debug("Loading schema")
 
-        except json.JSONDecodeError as err:
-            logger.error(
-                "Invalid JSON in schema file %s: %s (line %d, column %d)",
-                schema_source,
-                err.msg,
-                err.lineno,
-                err.colno,
-            )
+    source_label = schema_source or "clipboard"
 
-        except PermissionError:
-            logger.error("Permission denied for schema file: %s", schema_source)
-
-        except OSError as err:
-            logger.error(
-                "OS error accessing schema file %s: %s: %s",
-                schema_source,
-                type(err).__name__,
-                str(err),
-            )
-
-        except Exception as err:
-            logger.error(
-                "Unexpected error reading schema file %s: %s: %s",
-                schema_source,
-                type(err).__name__,
-                str(err),
-            )
-
-        sys.exit(1)
-
-    # Fallback: read schema from clipboard
     try:
-        clipboard_content = read_clipboard()
-        schema_dict = json.loads(clipboard_content)
+        raw = _read_input(schema_source)
+        data = _parse_json(raw, source_label)
+        _ensure_dict(data, source_label)
+        return data
 
-    except json.JSONDecodeError as err:
-        logger.error(
-            "Clipboard JSON invalid: %s (line %d, column %d)",
-            err.msg,
-            err.lineno,
-            err.colno,
-        )
+    except InputLoadError as err:
+        logger.error(str(err))
         sys.exit(1)
 
-    except Exception as err:
-        logger.error(
-            "Error reading schema from clipboard: %s: %s",
-            type(err).__name__,
-            str(err),
-        )
+
+def load_config(config_file_path: str | None = None) -> dict:
+    logger.debug("Loading config")
+
+    if not config_file_path:
+        return {}
+
+    try:
+        raw = _read_file(config_file_path)
+        data = _parse_json(raw, config_file_path)
+        _ensure_dict(data, config_file_path)
+        return data
+
+    except InputLoadError as err:
+        logger.error(str(err))
         sys.exit(1)
 
-    if not isinstance(schema_dict, dict):
-        logger.error("Clipboard JSON must be an object (dict).")
-        sys.exit(1)
 
-    return resolve_all_refs(schema_dict)
-
-
-def load_config(config_file_path: str):
-    config_dict = {}
-
-    if config_file_path:
-        if not os.path.isfile(config_file_path):
-            logger.error("Config file not found: %s", config_file_path)
-            sys.exit(1)
-
-        try:
-            with open(config_file_path, "r", encoding="utf-8") as file:
-                config_dict = json.load(file)
-
-        except json.JSONDecodeError as err:
-            logger.error(
-                "Invalid JSON in config file %s: %s (line %d, column %d)",
-                config_file_path,
-                err.msg,
-                err.lineno,
-                err.colno,
-            )
-            sys.exit(1)
-
-        except Exception as err:
-            logger.error(
-                "Error reading config file %s: %s: %s",
-                config_file_path,
-                type(err).__name__,
-                str(err),
-            )
-            sys.exit(1)
-
-    return config_dict
+def _read_input(source: str | None = None) -> str:
+    if source:
+        return _read_file(source)
+    return _read_clipboard()
 
 
-def read_clipboard():
+def _read_file(path: str) -> str:
+    if not os.path.isfile(path):
+        raise InputLoadError(f"File not found: {path}")
+
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return f.read()
+    except PermissionError:
+        raise InputLoadError(f"Permission denied: {path}")
+    except OSError as err:
+        raise InputLoadError(f"OS error reading {path}: {type(err).__name__}: {err}")
+
+
+def _read_clipboard() -> str:
     """Retrieve clipboard text with fallback strategies"""
     try:
-        pyperclip.set_clipboard("windows")  # Force Windows clipboard backend
+        pyperclip.set_clipboard("windows")
         return pyperclip.paste()
-
     except Exception:
         try:
-            tk_root = tk.Tk()
-            tk_root.withdraw()
-            return tk_root.clipboard_get()
+            root = tk.Tk()
+            root.withdraw()
+            return root.clipboard_get()
         except Exception as err:
-            logger.error("Unable to access clipboard: %s", err)
-            sys.exit(1)
+            raise InputLoadError(f"Unable to access clipboard: {err}")
+
+
+def _parse_json(raw: str, source_label: str) -> dict:
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError as err:
+        raise InputLoadError(
+            f"{source_label} contains invalid JSON: "
+            f"{err.msg} (line {err.lineno}, column {err.colno})"
+        )
+
+
+def _ensure_dict(data, source_label: str):
+    if not isinstance(data, dict):
+        raise InputLoadError(f"{source_label} must be a JSON object (dict)")
