@@ -144,6 +144,12 @@ It is also possible to make the matching more fine grained by matching the paren
 
 # Release Notes
 
+## Version 0.0.8
+* Refactored code
+* Build script works on company laptops
+* Added a testing script
+* Updated packages
+
 ## Version 0.0.7
 
 * New build options with much improved speed
