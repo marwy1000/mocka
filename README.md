@@ -178,5 +178,4 @@ Be sure to run and fix issues found by these commands before checking in code:
 ```powershell
 black .\src .\mocka.py -l 100
 pylint .\src .\mocka.py
-python release.py <version> "Some comment"  
 ```
