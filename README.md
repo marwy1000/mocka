@@ -147,7 +147,8 @@ It is also possible to make the matching more fine grained by matching the paren
 
 ## Version 0.0.9
 * Improved output options and changed defaults
-
+* Improved snapshop test
+* Added script for testing all schemas in a directory and its sub directory
 
 ## Version 0.0.8
 * Refactored code
