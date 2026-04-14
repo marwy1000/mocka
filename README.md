@@ -144,6 +144,11 @@ It is also possible to make the matching more fine grained by matching the paren
 
 # Release Notes
 
+
+## Version 0.0.9
+* Improved output options and changed defaults
+
+
 ## Version 0.0.8
 * Refactored code
 * Build script works on company laptops
@@ -163,7 +168,6 @@ It is also possible to make the matching more fine grained by matching the paren
 
 # TODO
 * Decide if formatting should have precedence over the app.config
-* Add more formatting support
 * Add more CLI options to override the app.config
 
 # Development

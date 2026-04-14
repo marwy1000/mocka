@@ -20,7 +20,20 @@ def parse_args():
         help="Mocka config file (will create and use the default if no input given).",
     )
     parser.add_argument(
-        "--out", "-o", help="Output file (optional), instead of console and clipboard."
+        "--out-file", "-of",
+        help="Output to file.",
+        action="store_true"
+    )
+    parser.add_argument(
+        "--out-clip", "-oc",
+        help="Output to the clipboard.",
+        action="store_true"
+    )
+    parser.add_argument(
+        "--no-console", "-nc",
+        help="Do not output to console.",
+        action="store_false",
+        default=True
     )
     parser.add_argument(
         "--seed",

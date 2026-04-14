@@ -50,11 +50,13 @@ def main():
 
         output = json.dumps(result, ensure_ascii=False, indent=2)
 
-        if args.out:
-            Path(args.out).write_text(output, encoding="utf-8")
-            logger.info("JSON written to %s", args.out)
-        else:
+        if args.out_file:
+            Path("mocked_data.json").write_text(output, encoding="utf-8")
+            logger.info("JSON written to %s", "mocked_data.json")
+        if args.out_clip:
+            logger.info("Generated data in the clipboard")
             pyperclip.copy(output)
+        if args.no_console:
             print(output)
 
     except Exception as e:
