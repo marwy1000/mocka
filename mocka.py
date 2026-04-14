@@ -4,7 +4,7 @@
 """
 This main file initiates the cli, reads files and then calls the function to generate the output
 """
-__version__ = "0.0.7"
+__version__ = "0.0.8"
 
 import sys
 import json
@@ -12,37 +12,11 @@ import logging
 from pathlib import Path
 import pyperclip
 from src.cli import parse_args
-from src.generator import generate_from_schema, configure_generator
+from src.generator import SchemaGenerator
 from src.file_loader import load_schema, load_config
 from src.faker_config import configure_faker, app_config
 
 logger = logging.getLogger(__name__)
-
-
-def setup_logging(debug: bool = False):
-    level = logging.DEBUG if debug else logging.INFO
-    logging.basicConfig(
-        level=level, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
-    )
-
-
-def save_custom_json(data: dict, filepath: str):
-    with open(filepath, "w", encoding="utf-8") as f:
-        f.write("{\n")
-        last_key = list(data.keys())[-1]
-        for key, value in data.items():
-            f.write(f'  "{key}": ')
-            if isinstance(value, list):
-                f.write("[\n")
-                for i, item in enumerate(value):
-                    comma = "," if i < len(value) - 1 else ""
-                    f.write(f"    {json.dumps(item)}{comma}\n")
-                f.write("  ]")
-            else:
-                f.write(json.dumps(value))
-            comma = "," if key != last_key else ""
-            f.write(f"{comma}\n")
-        f.write("}\n")
 
 
 def main():
@@ -59,20 +33,20 @@ def main():
         if not config_path.exists():
             if args.config == "app.config":
                 logger.info("Generated the config file app.config")
-                save_custom_json(app_config, "app.config")
+                save_app_config(app_config, "app.config")
             else:
                 logger.error("Config file not found: %s", config_path)
                 sys.exit(1)
 
-        schema = load_schema(args.schema)
         config = load_config(args.config)
         faker = configure_faker(config, args.seed)
-        configure_generator(config, faker)
-        result = generate_from_schema(
-            schema,
-            args,
-            root_schema=schema,
-        )
+        generator = SchemaGenerator(config, faker)
+        schema = load_schema(args.schema)
+
+        # Optionally resolve $ref first
+        schema = generator.prepare_schema(schema)
+
+        result = generator.generate(schema, args)
 
         output = json.dumps(result, ensure_ascii=False, indent=2)
 
@@ -85,6 +59,33 @@ def main():
 
     except Exception as e:
         print(e)
+
+
+def setup_logging(debug: bool = False):
+    level = logging.DEBUG if debug else logging.INFO
+    logging.basicConfig(level=level, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
+
+
+def save_app_config(json_obj: dict, output_path: str):
+    """Saves a json with the custom formatting of lists contents taking one per line"""
+    with open(output_path, "w", encoding="utf-8") as file:
+        file.write("{\n")
+        last_key_name = list(json_obj.keys())[-1]
+        for current_key, current_value in json_obj.items():
+            file.write(f'  "{current_key}": ')
+            if isinstance(current_value, list):
+                file.write("[\n")
+                for index, list_item in enumerate(current_value):
+                    trailing_comma = "," if index < len(current_value) - 1 else ""
+                    file.write(f"    {json.dumps(list_item)}{trailing_comma}\n")
+                file.write("  ]")
+            else:
+                file.write(json.dumps(current_value))
+
+            trailing_comma = "," if current_key != last_key_name else ""
+            file.write(f"{trailing_comma}\n")
+
+        file.write("}\n")
 
 
 if __name__ == "__main__":

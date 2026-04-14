@@ -144,6 +144,12 @@ It is also possible to make the matching more fine grained by matching the paren
 
 # Release Notes
 
+## Version 0.0.8
+* Refactored code
+* Build script works on company laptops
+* Added a testing script
+* Updated packages
+
 ## Version 0.0.7
 
 * New build options with much improved speed
@@ -165,7 +171,7 @@ It is also possible to make the matching more fine grained by matching the paren
 Be sure to run and fix issues found by these commands before checking in code:
 
 ```powershell
-black .\src .\mocka.py
+black .\src .\mocka.py -l 100
 pylint .\src .\mocka.py
 python release.py <version> "Some comment"  
 ```
