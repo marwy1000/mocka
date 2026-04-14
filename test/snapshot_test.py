@@ -7,7 +7,7 @@ import threading
 import itertools
 import json
 
-CONFIG_FILE = "test_config.json"
+CONFIG_FILE = "test.config"
 
 
 def load_config(config_path):
@@ -19,7 +19,7 @@ def load_config(config_path):
     with open(config_path, "r", encoding="utf-8") as f:
         config = json.load(f)
 
-    required_keys = ["mocka_exe_path", "directory_to_scan"]
+    required_keys = ["mocka_script_path", "directory_to_scan"]
     for key in required_keys:
         if key not in config:
             print(f"❌ Missing required configuration key: {key}")
@@ -94,7 +94,7 @@ class Spinner:
         sys.stdout.flush()
 
 
-def run_mocka_on_files(json_files, mocka_exe_path, baseline_path, directory_to_scan, config_file):
+def run_mocka_on_files(json_files, mocka_script_path, baseline_path, directory_to_scan, config_file):
     """Runs mocka.exe on each JSON file and stores filename with output hash."""
     results = []
     spinner = Spinner("Generating hashes")
@@ -103,7 +103,8 @@ def run_mocka_on_files(json_files, mocka_exe_path, baseline_path, directory_to_s
     try:
         for json_file in json_files:
             cmd = [
-                mocka_exe_path,
+                "python",
+                mocka_script_path,
                 "--config",
                 config_file,
                 json_file
@@ -144,7 +145,7 @@ def main():
     # Load configuration
     config = load_config(CONFIG_FILE)
 
-    mocka_exe_path = config["mocka_exe_path"]
+    mocka_script_path = config["mocka_script_path"]
     directory_to_scan = config["directory_to_scan"]
     baseline_file = config.get("baseline_file", "hash_output_test.txt")
     config_file = config.get("config_file", "app.config")
@@ -158,7 +159,7 @@ def main():
 
     run_mocka_on_files(
         json_files,
-        mocka_exe_path,
+        mocka_script_path,
         baseline_file,
         directory_to_scan,
         config_file

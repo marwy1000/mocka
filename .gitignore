@@ -1,11 +1,9 @@
 __pycache__
 build
-dist/*.py
 dist/*.exe
-dist/*.config
-dist/*test*
 dist/mocka
-!schemaExample.json
-!dist/snapshot_test.py
+test/*test*
+test/*.py
+!test/snapshot_test.py
 mocka.spec
 app.config
