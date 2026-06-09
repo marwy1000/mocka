@@ -123,7 +123,7 @@ class SchemaGenerator:
 
         if schema.get("type") == "integer":
             value = int(math.floor(value))
-
+        logger.debug(f"{path} {value}")
         return value
 
     def _compute_numeric_bounds(self, schema):
@@ -252,6 +252,7 @@ class SchemaGenerator:
 
         for keyword_match in keyword_map:
             if matches(keyword_match):
+                logging.debug(f"{path} {keyword_match}")
                 return self._faker_from_method(keyword_match, blank_mode, "string")
 
         for keyword_match in keyword_map:
