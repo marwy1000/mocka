@@ -24,43 +24,23 @@ pip install -r requirements.txt
 ```
 
 ## Usage
-
 ### Call the script without building and executable file
-
 Verify it and try it out. From the cloned directory:
 
 ```powershell
 python .\mocka.py test\generalSchemaExample.json
 ```
 
-### Build an exe
-
-From the cloned directory:
-
-```powershell
-python create_build.py 1
-```
-
-If you don't give 1 as an input, you will get an menu with different options, where by the exefile can end up in a different directory.
-
-Then verify it and try it out:
-
-```powershell
-cd dist\mocka
-.\mocka.exe --version
-.\mocka.exe ..\generalSchemaExample.json
-```
-
-## Help
-
+### Help
 ```powershell
 .\mocka.exe --help
 ```
 
 ```powershell
-usage: .\mocka.exe [-h] [--version] [--debug] [--out OUT] [--config CONFIG] [--seed SEED]
-                   [--include-optional | --no-optional] [--keymatch] [--blank]
-                   [schema]
+usage: mocka.py [-h] [--version] [--debug] [--config CONFIG] [--out-file] [--no-clipboard]
+                [--no-console] [--seed SEED] [--max-array MAX_ARRAY] [--include-optional |
+                --no-optional] [--keymatch] [--blank]
+                [schema]
 
 Generate JSON from schema.
 
@@ -71,10 +51,13 @@ options:
   -h, --help            show this help message and exit
   --version, -v         Show version and exit
   --debug, -d           Print debug info
-  --out OUT, -o OUT     Output file (optional), instead of console and clipboard.
-  --config CONFIG, -c CONFIG
-                        Mocka config file (will create and use the default if no input given).
-  --seed SEED, -s SEED  Random seed (optional), overrides config. 0 is random
+  --config, -c CONFIG   Mocka config file (will create and use the default if no input given).
+  --out-file, -of       Output to file.
+  --no-clipboard, -ncb  Don't output to the clipboard (always false for directories).
+  --no-console, -nc     Do not output to console.
+  --seed, -s SEED       Random seed (optional), overrides config. 0 is random
+  --max-array, -ma MAX_ARRAY
+                        Overrides config.
   --include-optional, -io
                         Include optional fields (default)
   --no-optional, -no    Don't include optional fields
@@ -82,12 +65,11 @@ options:
   --blank, -b           Generate blank values (empty strings, 0s, false, first enum, etc.)
 ```
 
-## Config File Example
-
+## Config File
+### Example
 Just run the script or exe once, pointing to a schema to generate the config file. It will be named app.config by default.
 
-### Config File Options:
-
+### Config File Options
 locale: A list of locales to be used for generating data. If multiple locales are provided, one will be chosen randomly each time the tool runs. You can specify any valid locale supported by the Faker library (e.g., en_US, sv_SE, it_IT, ja_JP).
 
 ```json
@@ -118,8 +100,8 @@ max_array_length: The maximum items in generated arrays. Default is 10. The lowe
 ```json
   "max_array_length": 10
 ```
-
-keyword_matching: This is an array that contains objects describing what keys to match to what faker methods and with what arguments. The matching is done from top to bottom.
+### Config File Key Matching
+keyword_matching: This is an array that contains objects describing what keys to match to what faker methods and built in methods and with what arguments. The matching is done from top to bottom.
 
 An example of an object can be seen below. It contains keywords that are checked against keys in the schema to see if the key contains the one of the keywords, allowing for partial matching, without case sensitivity.
 
@@ -133,13 +115,19 @@ An example of an object can be seen below. It contains keywords that are checked
 In addition to the built in faker methods you can also use the method enum where you provide an array which it randomly chooses a string from.
 
 ```json
-  { "keywords": ["age"], "method": "enum", "args": [1,2,3]},
+  { "keywords": ["age"],
+    "method": "enum",
+    "args": [1,2,3]
+  },
 ```
 
 It is also possible to make the matching more fine grained by matching the parent keys. This is done by providing a JSON object instead of a string, where the value is the final key that is being looked for. This matching doesn't allow for partial matches, and is also case insensitive.
 
 ```json
-  {"keywords": [{"parent": {"child": "age"}}], "method": "random_int", "args": {"min": 0, "max": 100}},
+  { "keywords": [{"parent": {"child": "age"}}],
+    "method": "random_int",
+    "args": {"min": 0, "max": 100}
+  },
 ```
 
 # Release Notes
@@ -161,7 +149,6 @@ It is also possible to make the matching more fine grained by matching the paren
 * Updated packages
 
 ## Version 0.0.7
-
 * New build options with much improved speed
   * Option 1 - uses onedir, which is superfast, but has an underlying folder and the built file ends up in dist\mocka
 * Updated packages and python requirement
@@ -171,6 +158,22 @@ It is also possible to make the matching more fine grained by matching the paren
 * Added support for numbers with minimum, maximum, exclusiveMinimum, exclusiveMaximum, multipleOf
 * Split the testschemas to several files
 
+# Build an exe
+From the cloned directory:
+
+```powershell
+python create_build.py 1
+```
+
+If you don't give 1 as an input, you will get an menu with different options, where by the exefile can end up in a different directory.
+
+Then verify it and try it out:
+
+```powershell
+cd dist\mocka
+.\mocka.exe --version
+.\mocka.exe ..\generalSchemaExample.json
+```
 
 # Development and Release
 Be sure to run and fix issues found by these commands before checking in code:
