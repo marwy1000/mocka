@@ -49,6 +49,10 @@ app_config = {
   "max_array_length": 1,
   "keyword_matching":
     [
+      { "keywords": ["vatrate"], "method": "enum", "args": ["0", "6", "12", "25"]},
+      { "keywords": ["vatcode"], "method": "enum", "args": ["SE0", "SE6", "SE12", "SE25", ]},
+      { "keywords": ["municipalitycode"], "method": "enum", "args": ["0180", "1480", "1280"]},
+      { "keywords": ["municipality"], "method": "city"},
       { "keywords": ["email", "e-mail", "mail"], "method": "email" },
       { "keywords": ["age"], "method": "random_int", "args": { "min": 0, "max": 100 }},
       { "keywords": ["dob", "birthday"],"method": "date_of_birth", "args": { "minimum_age": 18, "maximum_age": 90 } },
