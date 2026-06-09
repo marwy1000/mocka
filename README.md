@@ -139,16 +139,15 @@ In addition to the built in faker methods you can also use the method enum where
 It is also possible to make the matching more fine grained by matching the parent keys. This is done by providing a JSON object instead of a string, where the value is the final key that is being looked for. This matching doesn't allow for partial matches, and is also case insensitive.
 
 ```json
-  {"keywords": [{"parent": {"child": "age"}}], "method": "override", "args": {"value": 1}},
+  {"keywords": [{"parent": {"child": "age"}}], "method": "random_int", "args": {"min": 0, "max": 100}},
 ```
 
 # Release Notes
 ## Version 0.1.0
 * Changed clipboard defaults and CLI option
-* Option for overriding max array
-* Keyword matching can be done with anOption for overriding with a string
-* Added the metho enum which replaces the method override
-* Resolved one seed repeat bug
+* CLI option for overriding max array
+* Added the method enum which replaces the method override
+* Resolved seed repeat bug
 
 ## Version 0.0.9
 * Improved output options and changed defaults
