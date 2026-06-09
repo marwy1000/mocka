@@ -64,8 +64,6 @@ app_config = {
   "max_array_length": 3,
   "keyword_matching":
     [
-      { "keywords": ["status"], "method": "enum", "args": ["OPEN","CLOSED"]},
-      { "keywords": ["replace"], "method": "override", "args": "Value replaced"},
       { "keywords": ["email", "e-mail", "mail"], "method": "email" },
       { "keywords": ["age"], "method": "random_int", "args": { "min": 0, "max": 100 }},
       { "keywords": ["dob", "birthday"],"method": "date_of_birth", "args": { "minimum_age": 18, "maximum_age": 90 } },
@@ -96,7 +94,9 @@ app_config = {
       { "keywords": ["language", "språk"], "method": "language_name" },
       { "keywords": ["firstname", "förnamn"], "method": "first_name" },
       { "keywords": ["name", "fullname", "title", "namn"], "method": "name" },
-      { "keywords": ["color", "colour", "färg"], "method": "color" }
+      { "keywords": ["color", "colour", "färg"], "method": "color" },
+      { "keywords": ["teststatus"], "method": "enum", "args": ["OPEN","CLOSED"]},
+      { "keywords": ["testreplace"], "method": "override", "args": "Value replaced"}
     ]
 }
 # fmt: on

@@ -31,10 +31,10 @@
       "exclusiveMinimum": 0,
       "exclusiveMaximum": 5
     },
-    "status": {
+    "teststatus": {
        "type": "string" 
     },
-    "replace": {
+    "testreplace": {
        "type": "string" 
     }
   }
