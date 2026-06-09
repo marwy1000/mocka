@@ -148,6 +148,7 @@ It is also possible to make the matching more fine grained by matching the paren
 * Option for overriding max array
 * Keyword matching can be done with anOption for overriding with a string
 * Added the metho enum which replaces the method override
+* Resolved one seed repeat bug
 
 ## Version 0.0.9
 * Improved output options and changed defaults

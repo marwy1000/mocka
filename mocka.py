@@ -12,7 +12,7 @@ import logging
 from pathlib import Path
 import pyperclip
 from src.cli import parse_args
-from src.generator import SchemaGenerator
+from src.generator import SchemaGenerator, get_seed, create_rng
 from src.file_loader import load_schema, load_config
 from src.faker_config import configure_faker, app_config
 
@@ -39,8 +39,10 @@ def main():
                 sys.exit(1)
 
         config = load_config(args.config)
-        faker = configure_faker(config, args.seed)
-        generator = SchemaGenerator(config, faker)
+        seed = get_seed(config, args.seed)
+        rng = create_rng(seed)
+        faker = configure_faker(config, seed, rng)
+        generator = SchemaGenerator(config, faker, rng)
         schema = load_schema(args.schema)
 
         # Optionally resolve $ref first

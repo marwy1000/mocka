@@ -1,7 +1,6 @@
 """
 Functions for initiating and configuring Faker
 """
-
 import importlib
 import random
 import logging
@@ -10,48 +9,34 @@ from faker import Faker
 logger = logging.getLogger(__name__)
 
 
-def configure_faker(config: dict = None, cli_seed: int = None):
-    """Create and configure a Faker instance using config and optional CLI seed."""
-    logger.debug("Running function configure_faker")
-
+def configure_faker(config: dict = None, seed: int = None, rng = None):
     config = config or {}
 
-    # Faker does not support multiple locales simultaneously in a single instance.
-    # If a list is provided, we pick one randomly to preserve variability.
+    if seed is None:
+        raise ValueError("seed must be provided")
+
+    if rng is None:
+        rng = random.Random(seed)
+
     locale_config = config.get("locale")
 
     if isinstance(locale_config, list):
-        selected_locale = random.choice(locale_config)
+        selected_locale = rng.choice(locale_config)
     elif isinstance(locale_config, str):
         selected_locale = locale_config
     else:
-        # Fallback option set to US
         selected_locale = "en_US"
 
     faker_instance = Faker(selected_locale)
+    faker_instance.seed_instance(seed)
 
-    # CLI seed takes precedence to allow reproducible runs from outside config.
-    resolved_seed = cli_seed if cli_seed is not None else config.get("seed")
-
-    # Treat 0 as "no seed" and randomize it.
-    if resolved_seed in (None, 0):
-        resolved_seed = random.randint(1, 999999)
-
-    # Seed both Faker and Python's random to keep all randomness aligned.
-    faker_instance.seed_instance(resolved_seed)
-    random.seed(resolved_seed)
-
-    # Register additional providers:
-    # Only applied when using a single locale, since multi-locale setups
-    # can lead to inconsistent provider availability.
-    if not isinstance(locale_config, list):
-        for provider_name in config.get("providers", []):
-            try:
-                module_path = f"faker.providers.{provider_name}"
-                provider_module = importlib.import_module(module_path)
-                faker_instance.add_provider(provider_module.Provider)
-            except (ImportError, AttributeError, ModuleNotFoundError):
-                logger.warning("Faker provider '%s' not found. Skipping.", provider_name)
+    for provider_name in config.get("providers", []):
+        try:
+            module_path = f"faker.providers.{provider_name}"
+            provider_module = importlib.import_module(module_path)
+            faker_instance.add_provider(provider_module.Provider)
+        except Exception:
+            logger.warning("Faker provider '%s' not found. Skipping.", provider_name)
 
     return faker_instance
 
@@ -96,7 +81,7 @@ app_config = {
       { "keywords": ["name", "fullname", "title", "namn"], "method": "name" },
       { "keywords": ["color", "colour", "färg"], "method": "color" },
       { "keywords": ["teststatus"], "method": "enum", "args": ["OPEN","CLOSED"]},
-      { "keywords": ["testreplace"], "method": "override", "args": "Value replaced"}
+      { "keywords": ["testreplace"], "method": "enum", "args": ["Value replaced"]}
     ]
 }
 # fmt: on
