@@ -61,9 +61,11 @@ app_config = {
   "locale": ["sv_SE"],
   "seed": 0,
   "providers": ["internet", "address", "company"],
-  "max_array_length": 10,
+  "max_array_length": 3,
   "keyword_matching":
     [
+      { "keywords": ["status"], "method": "enum", "args": ["OPEN","CLOSED"]},
+      { "keywords": ["replace"], "method": "override", "args": "Value replaced"},
       { "keywords": ["email", "e-mail", "mail"], "method": "email" },
       { "keywords": ["age"], "method": "random_int", "args": { "min": 0, "max": 100 }},
       { "keywords": ["dob", "birthday"],"method": "date_of_birth", "args": { "minimum_age": 18, "maximum_age": 90 } },

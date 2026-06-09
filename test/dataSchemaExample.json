@@ -30,6 +30,12 @@
       "type": "number",
       "exclusiveMinimum": 0,
       "exclusiveMaximum": 5
+    },
+    "status": {
+       "type": "string" 
+    },
+    "replace": {
+       "type": "string" 
     }
   }
 }

@@ -175,9 +175,12 @@ class SchemaGenerator:
 
     def _generate_array(self, schema, args, field_name, root_schema, path):
         min_items = schema.get("minItems", 0 if args.blank else 1)
-        max_items = schema.get(
-            "maxItems", self.config.get("max_array_length", DEFAULT_MAX_ARRAY_LENGTH)
-        )
+        if args.max_array is None:
+            max_items = schema.get(
+                "maxItems", self.config.get("max_array_length", DEFAULT_MAX_ARRAY_LENGTH)
+            )
+        else:
+            max_items = args.max_array
         length = 0 if args.blank else random.randint(min_items, max_items)
 
         items_schema = schema.get("items", {})
@@ -283,8 +286,8 @@ class SchemaGenerator:
         method_name = entry["method"]
         args = entry.get("args", {})
         try:
-            if method_name == "override":
-                value = args.get("value", "")
+            if method_name == "enum":
+                value = random.choice(args)
             elif hasattr(self.faker, method_name):
                 value = getattr(self.faker, method_name)(**args)
             else:

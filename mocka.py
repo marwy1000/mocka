@@ -53,7 +53,7 @@ def main():
         if args.out_file:
             Path("mocked_data.json").write_text(output, encoding="utf-8")
             logger.info("JSON written to %s", "mocked_data.json")
-        if args.out_clip:
+        if not args.no_clipboard:
             logger.info("Generated data in the clipboard")
             pyperclip.copy(output)
         if args.no_console:

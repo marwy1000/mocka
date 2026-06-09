@@ -25,9 +25,9 @@ def parse_args():
         action="store_true"
     )
     parser.add_argument(
-        "--out-clip", "-oc",
-        help="Output to the clipboard.",
-        action="store_true"
+        "--no-clipboard", "-ncb",
+        help="Don't output to the clipboard (always false for directories).",
+        action="store_true",
     )
     parser.add_argument(
         "--no-console", "-nc",
@@ -40,6 +40,12 @@ def parse_args():
         "-s",
         type=int,
         help="Random seed (optional), overrides config. 0 is random",
+    )
+    parser.add_argument(
+        "--max-array",
+        "-ma",
+        type=int,
+        help="Overrides config.",
     )
     group = parser.add_mutually_exclusive_group()
     group.add_argument(

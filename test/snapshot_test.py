@@ -4,7 +4,6 @@ import sys
 import time
 import hashlib
 import json
-import itertools
 
 
 CONFIG_FILE = "test.config"
@@ -74,7 +73,8 @@ def run(json_files, script_path, config_file, base_dir):
             script_path,
             "--config",
             config_file,
-            file
+            file,
+            "--no-clipboard"
         ]
 
         try:
