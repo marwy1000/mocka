@@ -8,7 +8,7 @@ Mocka is a Python CLI tool that generates JSON data based on a JSON Schema. The 
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-Copyright (C) 2025 Salih Serdenak
+Copyright (C) 2026 Salih Serdenak
 
 ## Requirements
 
@@ -30,7 +30,7 @@ pip install -r requirements.txt
 Verify it and try it out. From the cloned directory:
 
 ```powershell
-python .\mocka.py dist\generalSchemaExample.json
+python .\mocka.py test\generalSchemaExample.json
 ```
 
 ### Build an exe
@@ -130,20 +130,24 @@ An example of an object can be seen below. It contains keywords that are checked
   },
 ```
 
-In addition to the built in faker methods you can also use the method override where you provide which static value you want to override with.
+In addition to the built in faker methods you can also use the method enum where you provide an array which it randomly chooses a string from.
 
 ```json
-  { "keywords": ["age"], "method": "override", "args": { "value": 1 }},
+  { "keywords": ["age"], "method": "enum", "args": [1,2,3]},
 ```
 
 It is also possible to make the matching more fine grained by matching the parent keys. This is done by providing a JSON object instead of a string, where the value is the final key that is being looked for. This matching doesn't allow for partial matches, and is also case insensitive.
 
 ```json
-  {"keywords": [{"parent": {"child": "age"}}], "method": "override", "args": {"value": 1}},
+  {"keywords": [{"parent": {"child": "age"}}], "method": "random_int", "args": {"min": 0, "max": 100}},
 ```
 
 # Release Notes
-
+## Version 0.1.0
+* Changed clipboard defaults and CLI option
+* CLI option for overriding max array
+* Added the method enum which replaces the method override
+* Resolved seed repeat bug
 
 ## Version 0.0.9
 * Improved output options and changed defaults
@@ -167,15 +171,24 @@ It is also possible to make the matching more fine grained by matching the paren
 * Added support for numbers with minimum, maximum, exclusiveMinimum, exclusiveMaximum, multipleOf
 * Split the testschemas to several files
 
-# TODO
-* Decide if formatting should have precedence over the app.config
-* Add more CLI options to override the app.config
 
-# Development
-
+# Development and Release
 Be sure to run and fix issues found by these commands before checking in code:
 
 ```powershell
 black .\src .\mocka.py -l 100
 pylint .\src .\mocka.py
+python .\test\snapshot_test.py
+```
+
+Run this test from the main branch and compare the output with the results from the branch you are developing in
+```powershell
+cd test
+python .\snapshot_test.py
+```
+
+Run this test from the main branch and compare the output with the results from the branch you are developing in
+```powershell
+cd test
+python .\snapshot_test.py
 ```

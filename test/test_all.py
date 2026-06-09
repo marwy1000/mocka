@@ -39,7 +39,8 @@ def run_mocka_on_files(json_files, script_path, config_file):
             script_path,
             "--config",
             config_file,
-            file
+            file,
+            "--no-clipboard"
         ]
 
         try:

@@ -15,9 +15,10 @@ DEFAULT_MAX_ARRAY_LENGTH = 10
 
 
 class SchemaGenerator:
-    def __init__(self, config, faker_instance):
+    def __init__(self, config, faker_instance, rng):
         self.config = config
         self.faker = faker_instance
+        self.rng = rng
 
         # Type dispatch map
         self.type_handlers = {
@@ -75,7 +76,7 @@ class SchemaGenerator:
         for key in ("oneOf", "anyOf"):
             if key in schema:
                 return self._generate_value(
-                    random.choice(schema[key]), args, field_name, root_schema, path
+                    self.rng.choice(schema[key]), args, field_name, root_schema, path
                 )
 
         if "allOf" in schema:
@@ -116,13 +117,13 @@ class SchemaGenerator:
         if multiple_of:
             start = math.ceil(min_val / multiple_of)
             end = math.floor(max_val / multiple_of)
-            value = multiple_of * random.randint(start, max(end, start))
+            value = multiple_of * self.rng.randint(start, max(end, start))
         else:
-            value = random.uniform(min_val, max_val)
+            value = self.rng.uniform(min_val, max_val)
 
         if schema.get("type") == "integer":
             value = int(math.floor(value))
-
+        logger.debug(f"{path} {value}")
         return value
 
     def _compute_numeric_bounds(self, schema):
@@ -166,19 +167,22 @@ class SchemaGenerator:
 
     def _generate_duration_iso(self):
         duration = timedelta(
-            days=random.randint(0, 30),
-            hours=random.randint(0, 23),
-            minutes=random.randint(0, 59),
-            seconds=random.randint(0, 59),
+            days=self.rng.randint(0, 30),
+            hours=self.rng.randint(0, 23),
+            minutes=self.rng.randint(0, 59),
+            seconds=self.rng.randint(0, 59),
         )
         return isodate.duration_isoformat(duration)
 
     def _generate_array(self, schema, args, field_name, root_schema, path):
         min_items = schema.get("minItems", 0 if args.blank else 1)
-        max_items = schema.get(
-            "maxItems", self.config.get("max_array_length", DEFAULT_MAX_ARRAY_LENGTH)
-        )
-        length = 0 if args.blank else random.randint(min_items, max_items)
+        if args.max_array is None:
+            max_items = schema.get(
+                "maxItems", self.config.get("max_array_length", DEFAULT_MAX_ARRAY_LENGTH)
+            )
+        else:
+            max_items = args.max_array
+        length = 0 if args.blank else self.rng.randint(min_items, max_items)
 
         items_schema = schema.get("items", {})
         additional_items = schema.get("additionalItems", True)
@@ -246,16 +250,22 @@ class SchemaGenerator:
                     return True
             return False
 
-        for entry in keyword_map:
-            if matches(entry):
-                return self._faker_from_entry(entry, blank_mode, "string")
+        for keyword_match in keyword_map:
+            if matches(keyword_match):
+                logging.debug(f"{path} {keyword_match}")
+                return self._faker_from_method(keyword_match, blank_mode, "string")
 
-        if any(
-            isinstance(k, str) and k.lower() in full_text
-            for entry in keyword_map
-            for k in entry.get("keywords", [])
-        ):
-            return self._faker_from_entry(entry, blank_mode, "string")
+        for keyword_match in keyword_map:
+            for k in keyword_match.get("keywords", []):
+                if not isinstance(k, str):
+                    continue
+
+                k_lower = k.lower()
+
+                if k_lower in full_text:
+                    logger.debug("matched keyword: %s", k_lower)
+
+                    return self._faker_from_method(keyword_match, blank_mode, "string")
 
         return "" if blank_mode else self._default_value("string")
 
@@ -277,16 +287,16 @@ class SchemaGenerator:
                         return True
         return False
 
-    def _faker_from_entry(self, entry, blank_mode, expected_type):
+    def _faker_from_method(self, keyword_match, blank_mode, expected_type):
         if blank_mode:
             return ""
-        method_name = entry["method"]
-        args = entry.get("args", {})
+        method_name = keyword_match["method"]
+        method_args = keyword_match.get("args", {})
         try:
-            if method_name == "override":
-                value = args.get("value", "")
+            if method_name == "enum":
+                value = self.rng.choice(method_args)
             elif hasattr(self.faker, method_name):
-                value = getattr(self.faker, method_name)(**args)
+                value = getattr(self.faker, method_name)(**method_args)
             else:
                 logger.warning("Unknown faker method '%s'", method_name)
                 value = self.faker.word()
@@ -308,7 +318,7 @@ class SchemaGenerator:
         enum_values = schema.get("enum", [])
         if not enum_values:
             return self._default_value(schema.get("type")) if blank_mode else None
-        return enum_values[0] if blank_mode else random.choice(enum_values)
+        return enum_values[0] if blank_mode else self.rng.choice(enum_values)
 
     def _default_value(self, expected_type):
         if expected_type == "string":
@@ -346,3 +356,16 @@ class SchemaGenerator:
             return [self.resolve_all_refs(item, root_schema) for item in schema]
 
         return schema
+
+def get_seed(config: dict = None, cli_seed: int = None) -> int:
+    config = config or {}
+
+    resolved_seed = cli_seed if cli_seed is not None else config.get("seed")
+
+    if resolved_seed in (None, 0):
+        resolved_seed = random.randint(1, 999999)
+
+    return resolved_seed
+
+def create_rng(seed: int):
+    return random.Random(seed)
